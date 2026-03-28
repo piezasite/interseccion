@@ -42,7 +42,6 @@
         o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
     }
 
-    // LISTA ORDENADA: phpframe y piezas4websites primero
     const nexos = [
         "https://phpframe.work", "https://db.phpframe.work",
         "https://piezas4websites.com", "https://db.piezas4websites.com",
@@ -63,14 +62,20 @@
             const start = Date.now();
             const vivo = await new Promise(res => {
                 const img = new Image();
-                const timeout = setTimeout(() => res(false), 3000);
+                const timeout = setTimeout(() => res(false), 3500);
                 
-                img.onload = () => { clearTimeout(timeout); res(true); };
+                img.onload = () => {
+                    const rtt = Date.now() - start;
+                    clearTimeout(timeout);
+                    // Si carga demasiado rápido, es probable que sea una respuesta de cache o Cloudflare
+                    res(rtt > 150); 
+                };
+                
                 img.onerror = () => {
                     clearTimeout(timeout);
                     const rtt = Date.now() - start;
-                    // Filtro de 100ms para diferenciar Error 1033 (rápido) de Docker (lento)
-                    res(rtt > 100); 
+                    // El error 1033 es casi instantáneo. Subimos el umbral a 180ms para adaptowebs.
+                    res(rtt > 180); 
                 };
                 img.src = `${url}/favicon.ico?v=${start}`;
             });
