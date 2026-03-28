@@ -7,219 +7,167 @@
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #02040a; /* Azul Medianoche Profundo */
-            --glass: rgba(10, 15, 30, 0.7); /* Cristal Ahumado Azulado */
-            --gold-light: #f1c40f; /* Oro Grial */
-            --gold-dark: #b7950b; /* Oro Envejecido */
-            --purple: #6c3483; /* Púrpura Amatista */
-            --cyan: #00e5ff; /* Cian Estelar (para contraste ligero) */
-            --shadow-gold: 0 0 15px rgba(241, 196, 15, 0.3);
+            --bg-color: #020617;
+            --text-main: #cbd5e1;
+            --text-muted: #64748b;
+            --gold: #d4af37;
+            --gold-bright: #f9e076;
+            --gold-dark: #b8860b;
+            --glass: rgba(15, 23, 42, 0.8);
+            --border-glass: rgba(212, 175, 55, 0.2);
+            --online: #10b981;
+            --offline: #ef4444;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-deep);
-            color: #ecf0f1;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             font-family: 'Share Tech Mono', monospace;
             margin: 0;
-            padding: 0;
-            width: 100vw;
             height: 100vh;
-            overflow: hidden;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Degradado de fondo maduro */
-            background-image: radial-gradient(circle at center, #0a1128 0%, #02040a 100%);
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         }
 
-        /* Capa de líneas CRT y Distorsión Sutil */
+        /* Scanlines */
         body::before {
-            content: " ";
+            content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 3px;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
             z-index: 100;
             pointer-events: none;
-            opacity: 0.6;
         }
 
-        .grial-frame {
-            width: 90%;
+        .grial-terminal {
+            width: 92%;
             max-width: 480px;
-            /* Glassmorphism Efecto */
             background: var(--glass);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(241, 196, 15, 0.2);
-            border-radius: 8px;
-            padding: 30px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 35px;
             position: relative;
             z-index: 10;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), var(--shadow-gold);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1);
             text-align: center;
-            transition: all 0.5s ease;
         }
 
-        /* Título con Glitch de Oro Envejecido */
-        .header-title {
-            font-size: 1.4rem;
-            font-weight: bold;
+        .header {
+            font-size: 1.5rem;
+            color: var(--gold-bright);
+            letter-spacing: 4px;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            color: var(--gold-light);
-            text-shadow: 2px 0 var(--purple), -1px 0 var(--cyan);
             margin-bottom: 25px;
-            animation: glitch-gold 1s infinite;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
         }
 
-        @keyframes glitch-gold {
-            0% { text-shadow: 2px 0 var(--purple), -1px 0 var(--cyan); }
-            50% { text-shadow: -2px 0 var(--purple), 1px 0 var(--cyan); transform: translate(1px, -1px); }
-            100% { text-shadow: 2px 0 var(--purple), -1px 0 var(--cyan); }
-        }
-
-        .status-text {
-            font-size: 0.8rem;
-            color: #bbb;
-            border-bottom: 1px solid rgba(241, 196, 15, 0.1);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .nodes-list {
-            max-height: 300px;
+        .nodes-container {
+            max-height: 320px;
             overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--gold-dark) transparent;
+            margin: 20px 0;
+            padding-right: 5px;
         }
 
-        .node-item {
+        .node-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(108, 52, 131, 0.1);
-            border-left: 2px solid var(--purple);
-            margin: 8px 0;
-            padding: 14px;
+            background: rgba(100, 116, 139, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            margin: 10px 0;
+            padding: 15px;
             text-decoration: none;
-            color: #ecf0f1;
-            font-size: 0.8rem;
+            color: var(--text-main);
+            border-radius: 6px;
+            transition: 0.3s;
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        .node-card:hover {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+            transform: translateX(5px);
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--online);
+            box-shadow: 0 0 10px var(--online);
+        }
+
+        .btn-action {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 16px;
+            font-family: inherit;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
             border-radius: 4px;
             transition: 0.3s;
-            animation: node-emerge 0.4s ease-out forwards;
+            margin-top: 10px;
         }
 
-        .node-item:hover {
-            background: rgba(241, 196, 15, 0.05);
-            border-left: 2px solid var(--gold-light);
-            box-shadow: var(--shadow-gold);
-            transform: translateX(3px);
-            color: var(--gold-light);
+        .btn-action:hover {
+            background: var(--gold);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
 
-        @keyframes node-emerge { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #offline-screen { display: none; }
+        .avatar { width: 100%; max-width: 240px; border-radius: 8px; border: 1px solid var(--gold-dark); margin: 20px 0; opacity: 0.8; }
+        .narrative { font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; font-style: italic; }
 
-        .alive-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: var(--gold-light);
-            box-shadow: 0 0 10px var(--gold-light);
-            animation: pulse-gold 1.5s infinite;
-        }
-
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 5px var(--gold-light); } 50% { box-shadow: 0 0 15px var(--gold-light); } 100% { box-shadow: 0 0 5px var(--gold-light); } }
-
-        /* UI Mantenimiento (La Lavandería) */
-        #offline-screen { display: none; text-align: center; animation: fadeIn 1s; }
-        .avatar-img {
-            width: 100%;
-            max-width: 260px;
-            border: 1px solid rgba(241, 196, 15, 0.3);
-            border-radius: 4px;
-            margin: 20px 0;
-            filter: contrast(1.1) brightness(0.9);
-            box-shadow: var(--shadow-gold);
-        }
-
-        .offline-title {
-            color: #e74c3c; /* Rojo suave para alerta madura */
-            font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
-
-        .offline-msg {
-            font-size: 0.75rem;
-            line-height: 1.6;
-            color: #b0bec5;
-            padding: 0 10px;
-        }
-
-        /* Botón Gold Glass */
-        .btn-gold {
-            display: inline-block;
-            background: transparent;
-            border: 1px solid var(--gold-light);
-            color: var(--gold-light);
-            padding: 14px 28px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.85rem;
-            margin-top: 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 4px;
-            transition: 0.4s;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-gold:hover {
-            background: var(--gold-light);
-            color: var(--bg-deep);
-            box-shadow: var(--shadow-gold);
-        }
-
-        /* Full Screen Loader */
-        #boot-sector { width: 100%; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="grial-frame">
-    <div class="header-title">SYNTAX_SANCTUARY</div>
+<div class="grial-terminal">
+    <div class="header">SYNTAX_SANCTUARY</div>
     
     <div id="boot-sector">
-        <button class="btn-gold" onclick="iniciarGrial()">[ INICIAR_SONDEO_DE_NEXOS ]</button>
+        <button class="btn-action" onclick="deepScan()">[ EJECUTAR_SONDEO_HIBRIDO ]</button>
     </div>
 
     <div id="monitor-ui" style="display:none;">
-        <div id="scan-label" class="status-text">_CONECTANDO_AL_GRIAL_DE_RED..._IDENTIFICANDO_FRACTALES...</div>
-        <div id="nodes-list" class="nodes-list"></div>
+        <div id="nodes-list" class="nodes-container"></div>
     </div>
 
     <div id="offline-screen">
-        <div class="offline-title">[!] ALERTA: FRACTALES_LATENTES</div>
-        <img src="avatar.png" class="avatar-img" alt="Archivista">
-        <div class="offline-msg">
-            "En el ciclo de luz, mis manos operan la materia y purifican textiles en el mundo real. Pero cuando la oscuridad cae y el tiempo es libre, mi mente transmuta el código y construye puentes hacia el internet puro. Mis fractales de red duermen, pero mi imperio digital es eterno."
-        </div>
-        <a href="https://wa.me/15058619970" class="btn-gold">[ ESTABLECER_LINEA_DIRECTA_WA ]</a>
+        <div style="color:var(--offline); font-weight:bold; margin-bottom:10px;">[!] STATUS: DISCONNECTED</div>
+        <img src="avatar.png" class="avatar" alt="Archivista">
+        <p class="narrative">
+            "Mientras purifico textiles en el ciclo de luz, mi mente transmuta código en las sombras. Mis nexos duermen esperando el retorno del constructor."
+        </p>
+        <a href="https://wa.me/15058619970" class="btn-action" style="text-decoration:none; display:block;">[ CONTACTO_DIRECTO_WA ]</a>
     </div>
 </div>
 
 <script>
     const audio = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(f=1000, d=0.08) { // Sonido más corto y agudo
+    function beep(f=1000) {
         const o=audio.createOscillator(), g=audio.createGain();
         o.type='sine'; o.frequency.value=f; g.gain.value=0.02;
-        o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+d);
+        o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
     }
 
+    // Lista ordenada según tu requerimiento
     const nexos = [
         "https://adaptowebs.com", "https://db.adaptowebs.com",
         "https://mercancia.store", "https://db.mercancia.store",
@@ -229,55 +177,50 @@
         "https://piezas4websites.com", "https://db.piezas4websites.com"
     ];
 
-    async function verify(url) {
-        return new Promise(res => {
-            const start = Date.now();
-            const img = new Image();
-            const fail = setTimeout(() => res(false), 5000); // 5s por Piezas4WebSites lento
-            
-            // FILTRO ESTRICTO: 350ms para adaptowebs.com
-            img.onload = () => { clearTimeout(fail); res((Date.now() - start) > 350); };
-            img.onerror = () => { clearTimeout(fail); res((Date.now() - start) > 350); };
-            
-            img.src = `${url}/favicon.ico?v=${start}`;
-        });
-    }
-
-    async function iniciarGrial() {
+    async function deepScan() {
         if (audio.state === 'suspended') audio.resume();
-        beep(440, 0.2); // Tono de inicio
-        
         document.getElementById('boot-sector').style.display = 'none';
         document.getElementById('monitor-ui').style.display = 'block';
-        
         const list = document.getElementById('nodes-list');
-        const screenOff = document.getElementById('offline-screen');
-        let counter = 0;
+        let activos = 0;
 
-        for (const node of nexos) {
-            const online = await verify(node);
-            if (online) {
-                counter++;
-                beep(1200, 0.05); // Sonido de nodo rápido
+        for (const url of nexos) {
+            try {
+                const start = Date.now();
+                // Híbrido: Comprobamos latencia Y el contenido del archivo PHP
+                const controller = new AbortController();
+                const tid = setTimeout(() => controller.abort(), 4500);
+
+                const res = await fetch(`${url}/status.php?v=${start}`, { 
+                    mode: 'cors', 
+                    signal: controller.signal 
+                });
                 
-                const el = document.createElement('a');
-                el.className = 'node-item';
-                el.href = node;
-                el.target = "_blank";
-                // Limpieza del nombre para diseño minimalista
-                const name = node.replace("https://", "").replace(".com", "").replace(".work", "").replace(".store", "").toUpperCase();
-                el.innerHTML = `<span>> ${name}</span><div class="alive-dot"></div>`;
-                list.appendChild(el);
-                await new Promise(r => setTimeout(r, 150));
+                const data = await res.json();
+                const rtt = Date.now() - start;
+                clearTimeout(tid);
+
+                // BLINDAJE: Solo si la llave es correcta Y la latencia es real (>250ms por el túnel)
+                if (data.key === "syntax-sanctuary-active" && rtt > 250) {
+                    activos++; beep(1200);
+                    const el = document.createElement('a');
+                    el.className = 'node-card';
+                    el.href = url;
+                    el.target = "_blank";
+                    const label = url.replace("https://", "").toUpperCase();
+                    el.innerHTML = `<span>> ${label}</span><div class="status-dot"></div>`;
+                    list.appendChild(el);
+                    await new Promise(r => setTimeout(r, 120));
+                }
+            } catch (e) {
+                console.warn(`Nodo ${url} ignorado (Fallo de firma o latencia).`);
             }
         }
 
-        document.getElementById('scan-label').innerText = `SONDEO_FINALIZADO: ${counter} NEXOS_ACTIVOS`;
-        
-        if (counter === 0) {
-            beep(150, 0.4); // Sonido de error crítico
+        if (activos === 0) {
+            beep(200);
             document.getElementById('monitor-ui').style.display = 'none';
-            screenOff.style.display = 'block';
+            document.getElementById('offline-screen').style.display = 'block';
         }
     }
 </script>
