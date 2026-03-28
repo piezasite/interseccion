@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SYNTAX SANCTUARY | Terminal</title>
+    <title>SYNTAX SANCTUARY | Terminal de Red</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #050505; --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --neon-green: #39ff14; --neon-red: #ff003c; }
@@ -24,10 +23,10 @@
 
 <div class="terminal">
     <div class="glitch">SYNTAX_SANCTUARY.sys</div>
-    <div id="boot-sector"><button class="start-btn" onclick="analizarImperio()">[ INICIAR_SONDEO_PRIORITARIO ]</button></div>
+    <div id="boot-sector"><button class="start-btn" onclick="analizarImperio()">[ EJECUTAR_SONDEO_FINAL ]</button></div>
     <div id="monitor-ui" style="display:none;"><div id="nodes-list"></div></div>
     <div id="offline-screen">
-        <p style="color:var(--neon-red); font-weight:bold;">[!] STATUS: TUNNEL_DISCONNECTED</p>
+        <p style="color:var(--neon-red); font-weight:bold;">[!] STATUS: CRITICAL_OFFLINE</p>
         <img src="avatar.png" class="avatar" alt="Archivista">
         <p style="font-size: 0.8rem; line-height: 1.4;">toy atendiendo mi trabajo en el mundo real, pero en cuanto vuelba a iniciar sesion eni imperio digital mis servicios estaran disponibles.</p>
         <a href="https://wa.me/15058619970" class="wa-btn">[ LINEA_DIRECTA_WA ]</a>
@@ -42,13 +41,14 @@
         o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
     }
 
+    // NUEVO ORDEN: adaptowebs arriba, phpframe y piezas4websites AL FINAL
     const nexos = [
-        "https://phpframe.work", "https://db.phpframe.work",
-        "https://piezas4websites.com", "https://db.piezas4websites.com",
         "https://adaptowebs.com", "https://db.adaptowebs.com",
         "https://mercancia.store", "https://db.mercancia.store",
         "https://syntaxsanctuary.com", "https://db.syntaxsanctuary.com",
-        "https://timefinancehub.com", "https://db.timefinancehub.com"
+        "https://timefinancehub.com", "https://db.timefinancehub.com",
+        "https://phpframe.work", "https://db.phpframe.work",
+        "https://piezas4websites.com", "https://db.piezas4websites.com"
     ];
 
     async function analizarImperio() {
@@ -62,20 +62,21 @@
             const start = Date.now();
             const vivo = await new Promise(res => {
                 const img = new Image();
-                const timeout = setTimeout(() => res(false), 3500);
+                // Timeout largo de 5s porque Piezas4WebSites es lento
+                const timeout = setTimeout(() => res(false), 5000); 
                 
                 img.onload = () => {
                     const rtt = Date.now() - start;
                     clearTimeout(timeout);
-                    // Si carga demasiado rápido, es probable que sea una respuesta de cache o Cloudflare
-                    res(rtt > 150); 
+                    // FILTRO DE SEGURIDAD: 250ms 
+                    // Si responde más rápido que eso, es Cloudflare Error 1033.
+                    res(rtt > 250); 
                 };
                 
                 img.onerror = () => {
                     clearTimeout(timeout);
                     const rtt = Date.now() - start;
-                    // El error 1033 es casi instantáneo. Subimos el umbral a 180ms para adaptowebs.
-                    res(rtt > 180); 
+                    res(rtt > 250); 
                 };
                 img.src = `${url}/favicon.ico?v=${start}`;
             });
@@ -89,7 +90,7 @@
                 el.target = "_blank";
                 el.innerHTML = `<span>> ${name}</span><div class="dot"></div>`;
                 list.appendChild(el);
-                await new Promise(r => setTimeout(r, 150));
+                await new Promise(r => setTimeout(r, 100));
             }
         }
 
@@ -102,3 +103,4 @@
 </script>
 </body>
 </html>
+
