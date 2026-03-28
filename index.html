@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syntax Sanctuary | Estado del Imperio Digital</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --neon-green: #00f229; /* Inspirado en image_0.png */
+            --neon-purple: #bc13fe; /* Inspirado en image_1.png */
+            --text-color: #e0e0e0;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(188, 19, 254, 0.3);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 15px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .lemo {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        #global-msg {
+            font-size: 1.1rem;
+            margin: 20px 0;
+        }
+
+        .loading {
+            color: #888;
+            animation: pulse 1s infinite;
+        }
+
+        .online-list {
+            display: none; /* Se activa con JS */
+            margin-top: 1.5rem;
+        }
+
+        .service-card {
+            background: rgba(0, 242, 41, 0.05);
+            margin: 10px 0;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 242, 41, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+            text-decoration: none;
+            color: var(--neon-green);
+        }
+
+        .service-card:hover {
+            transform: scale(1.02);
+            background: rgba(0, 242, 41, 0.1);
+            box-shadow: 0 0 15px rgba(0, 242, 41, 0.2);
+        }
+
+        .service-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .database-prefix {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .offline-notice {
+            display: none; /* Se activa con JS */
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .offline-notice img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            border: 1px solid var(--neon-purple);
+            filter: grayscale(0.5) contrast(1.2);
+        }
+
+        .offline-text p {
+            font-size: 1.1rem;
+            color: #eee;
+        }
+
+        .offline-lemo {
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 0;
+        }
+
+        .whatsapp-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 12px 25px;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            transition: 0.3s;
+        }
+
+        .whatsapp-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+
+        .whatsapp-btn .wa-icon {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        .wa-description {
+            font-size: 0.85rem;
+            color: #bbb;
+            margin-top: 5px;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Syntax Sanctuary</h1>
+        <p class="lemo">Estado del Imperio Digital</p>
+        
+        <p id="global-msg" class="loading">Iniciando escaneo de perímetros...</p>
+
+        <div id="online-section" class="online-list">
+            </div>
+
+        <div id="offline-section" class="offline-notice">
+            <p class="offline-lemo">¡El Archivista del Stack! (¡Es Real!)</p>
+            
+            <img src="https://via.placeholder.com/600x600/0d0d0d/bc13fe?text=REEMPLAZAR+CON+IMAGEN+DEL+ARCHIVISTA" alt="Archivista del Stack - Mantenimiento del Mundo Real">
+            
+            <div class="offline-text">
+                <p>toy atendiendo mi trabajo en el mundo real, pero en cuanto vuelba a iniciar sesion eni imperio digital mis servicios estaran disponibles.</p>
+            </div>
+            
+            <a href="https://wa.me/15058619970?text=Hola%2C%20necesito%20un%20diagnóstico%2Fasistencia%20tectnica%20para..." class="whatsapp-btn" target="_blank">
+                <span class="wa-icon">📲</span> LINEA DIRECTA WHATSAPP
+            </a>
+            <p class="wa-description">Contáctame directamente para diagnóstico, soporte tectnico o consulta sobre alguno de mis proyectos.</p>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN: Lista de servicios de image_0.png
+        // El script asume que la URL para verificar es 'https://' + el nombre del servicio.
+        const servicesToDisplay = [
+            { name: "db.adaptowebs.com", isDatabase: true },
+            { name: "mercancia.store", isDatabase: false },
+            { name: "db.mercancia.store", isDatabase: true },
+            { name: "phpframe.work", isDatabase: false },
+            { name: "db.phpframe.work", isDatabase: true },
+            { name: "piezas4websites.com", isDatabase: false },
+            { name: "db.piezas4websites.com", isDatabase: true },
+            { name: "syntaxsanctuary.com", isDatabase: false },
+            { name: "db.syntaxsanctuary.com", isDatabase: true },
+            { name: "timefinancehub.com", isDatabase: false },
+            { name: "db.timefinancehub.com", isDatabase: true }
+        ];
+
+        async function checkStatus(url) {
+            try {
+                // Truco de 'no-cors' para GitHub Pages
+                // Si el servidor responde (incluso con una respuesta opaca), no lanza error.
+                // Es un "ping" básico pero útil.
+                await fetch(url, { mode: 'no-cors' });
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function init() {
+            const globalMsg = document.getElementById('global-msg');
+            const onlineSection = document.getElementById('online-section');
+            const offlineSection = document.getElementById('offline-section');
+            
+            let anyOnline = false;
+
+            // Verificar el estado de cada servicio
+            for (const service of servicesToDisplay) {
+                const url = `https://${service.name}`;
+                const isOnline = await checkStatus(url);
+                
+                if (isOnline) {
+                    anyOnline = true;
+                    const card = document.createElement('a');
+                    card.className = 'service-card';
+                    card.href = url;
+                    card.target = '_blank';
+                    
+                    const nameContainer = document.createElement('div');
+                    nameContainer.className = 'service-name';
+                    if (service.isDatabase) {
+                        const prefix = document.createElement('span');
+                        prefix.className = 'database-prefix';
+                        prefix.innerText = "DB.";
+                        nameContainer.appendChild(prefix);
+                        nameContainer.appendChild(document.createTextNode(service.name.replace('db.', '')));
+                    } else {
+                        nameContainer.innerText = service.name.toUpperCase();
+                    }
+                    
+                    const dot = document.createElement('div');
+                    dot.className = 'status-dot';
+                    
+                    card.appendChild(nameContainer);
+                    card.appendChild(dot);
+                    onlineSection.appendChild(card);
+                }
+            }
+
+            // Actualizar la interfaz según el estado global
+            if (anyOnline) {
+                globalMsg.innerText = "Sistemas en línea. Acceso autorizado:";
+                globalMsg.classList.remove('loading');
+                onlineSection.style.display = 'block';
+            } else {
+                globalMsg.style.display = 'none';
+                offlineSection.style.display = 'flex';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
