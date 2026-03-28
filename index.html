@@ -3,42 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SYNTAX SANCTUARY | Terminal de Red</title>
+    <title>SYNTAX SANCTUARY | Grial de Red</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #050505; --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --neon-green: #39ff14; --neon-red: #ff003c; }
-        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%); background-size: 100% 4px; z-index: 100; pointer-events: none; }
-        .terminal { width: 90%; max-width: 500px; background: rgba(10, 10, 10, 0.98); border: 2px solid var(--neon-purple); padding: 25px; box-shadow: 0 0 20px var(--neon-purple); z-index: 10; border-radius: 5px; text-align: center; }
-        .glitch { font-size: 1.5rem; font-weight: bold; text-shadow: 2px 0 var(--neon-cyan), -2px 0 var(--neon-purple); margin-bottom: 20px; letter-spacing: 2px; }
-        .node-link { display: flex; justify-content: space-between; align-items: center; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); margin: 8px 0; padding: 12px; text-decoration: none; color: var(--neon-cyan); font-size: 0.85rem; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
-        #offline-screen { display: none; }
-        .avatar { width: 100%; max-width: 280px; border: 1px solid var(--neon-purple); margin: 15px 0; }
-        .wa-btn { display: inline-block; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 12px 24px; text-decoration: none; font-weight: bold; margin-top: 15px; text-transform: uppercase; }
-        .start-btn { background: none; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 15px 30px; cursor: pointer; font-family: inherit; width: 100%; text-transform: uppercase; }
+        :root {
+            --bg-deep: #02040a; /* Azul Medianoche Profundo */
+            --glass: rgba(10, 15, 30, 0.7); /* Cristal Ahumado Azulado */
+            --gold-light: #f1c40f; /* Oro Grial */
+            --gold-dark: #b7950b; /* Oro Envejecido */
+            --purple: #6c3483; /* Púrpura Amatista */
+            --cyan: #00e5ff; /* Cian Estelar (para contraste ligero) */
+            --shadow-gold: 0 0 15px rgba(241, 196, 15, 0.3);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #ecf0f1;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Degradado de fondo maduro */
+            background-image: radial-gradient(circle at center, #0a1128 0%, #02040a 100%);
+        }
+
+        /* Capa de líneas CRT y Distorsión Sutil */
+        body::before {
+            content: " ";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            background-size: 100% 3px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .grial-frame {
+            width: 90%;
+            max-width: 480px;
+            /* Glassmorphism Efecto */
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(241, 196, 15, 0.2);
+            border-radius: 8px;
+            padding: 30px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), var(--shadow-gold);
+            text-align: center;
+            transition: all 0.5s ease;
+        }
+
+        /* Título con Glitch de Oro Envejecido */
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--gold-light);
+            text-shadow: 2px 0 var(--purple), -1px 0 var(--cyan);
+            margin-bottom: 25px;
+            animation: glitch-gold 1s infinite;
+        }
+
+        @keyframes glitch-gold {
+            0% { text-shadow: 2px 0 var(--purple), -1px 0 var(--cyan); }
+            50% { text-shadow: -2px 0 var(--purple), 1px 0 var(--cyan); transform: translate(1px, -1px); }
+            100% { text-shadow: 2px 0 var(--purple), -1px 0 var(--cyan); }
+        }
+
+        .status-text {
+            font-size: 0.8rem;
+            color: #bbb;
+            border-bottom: 1px solid rgba(241, 196, 15, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nodes-list {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold-dark) transparent;
+        }
+
+        .node-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(108, 52, 131, 0.1);
+            border-left: 2px solid var(--purple);
+            margin: 8px 0;
+            padding: 14px;
+            text-decoration: none;
+            color: #ecf0f1;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            transition: 0.3s;
+            animation: node-emerge 0.4s ease-out forwards;
+        }
+
+        .node-item:hover {
+            background: rgba(241, 196, 15, 0.05);
+            border-left: 2px solid var(--gold-light);
+            box-shadow: var(--shadow-gold);
+            transform: translateX(3px);
+            color: var(--gold-light);
+        }
+
+        @keyframes node-emerge { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .alive-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--gold-light);
+            box-shadow: 0 0 10px var(--gold-light);
+            animation: pulse-gold 1.5s infinite;
+        }
+
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 5px var(--gold-light); } 50% { box-shadow: 0 0 15px var(--gold-light); } 100% { box-shadow: 0 0 5px var(--gold-light); } }
+
+        /* UI Mantenimiento (La Lavandería) */
+        #offline-screen { display: none; text-align: center; animation: fadeIn 1s; }
+        .avatar-img {
+            width: 100%;
+            max-width: 260px;
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            border-radius: 4px;
+            margin: 20px 0;
+            filter: contrast(1.1) brightness(0.9);
+            box-shadow: var(--shadow-gold);
+        }
+
+        .offline-title {
+            color: #e74c3c; /* Rojo suave para alerta madura */
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .offline-msg {
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: #b0bec5;
+            padding: 0 10px;
+        }
+
+        /* Botón Gold Glass */
+        .btn-gold {
+            display: inline-block;
+            background: transparent;
+            border: 1px solid var(--gold-light);
+            color: var(--gold-light);
+            padding: 14px 28px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            transition: 0.4s;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-light);
+            color: var(--bg-deep);
+            box-shadow: var(--shadow-gold);
+        }
+
+        /* Full Screen Loader */
+        #boot-sector { width: 100%; }
     </style>
 </head>
 <body>
 
-<div class="terminal">
-    <div class="glitch">SYNTAX_SANCTUARY.sys</div>
-    <div id="boot-sector"><button class="start-btn" onclick="analizarImperio()">[ EJECUTAR_SONDEO_ULTIMATUM ]</button></div>
-    <div id="monitor-ui" style="display:none;"><div id="nodes-list"></div></div>
+<div class="grial-frame">
+    <div class="header-title">SYNTAX_SANCTUARY</div>
+    
+    <div id="boot-sector">
+        <button class="btn-gold" onclick="iniciarGrial()">[ INICIAR_SONDEO_DE_NEXOS ]</button>
+    </div>
+
+    <div id="monitor-ui" style="display:none;">
+        <div id="scan-label" class="status-text">_CONECTANDO_AL_GRIAL_DE_RED..._IDENTIFICANDO_FRACTALES...</div>
+        <div id="nodes-list" class="nodes-list"></div>
+    </div>
+
     <div id="offline-screen">
-        <p style="color:var(--neon-red); font-weight:bold;">[!] STATUS: CRITICAL_OFFLINE</p>
-        <img src="avatar.png" class="avatar" alt="Archivista">
-        <p style="font-size: 0.8rem; line-height: 1.4;">toy atendiendo mi trabajo en el mundo real, pero en cuanto vuelba a iniciar sesion eni imperio digital mis servicios estaran disponibles.</p>
-        <a href="https://wa.me/15058619970" class="wa-btn">[ LINEA_DIRECTA_WA ]</a>
+        <div class="offline-title">[!] ALERTA: FRACTALES_LATENTES</div>
+        <img src="avatar.png" class="avatar-img" alt="Archivista">
+        <div class="offline-msg">
+            "En el ciclo de luz, mis manos operan la materia y purifican textiles en el mundo real. Pero cuando la oscuridad cae y el tiempo es libre, mi mente transmuta el código y construye puentes hacia el internet puro. Mis fractales de red duermen, pero mi imperio digital es eterno."
+        </div>
+        <a href="https://wa.me/15058619970" class="btn-gold">[ ESTABLECER_LINEA_DIRECTA_WA ]</a>
     </div>
 </div>
 
 <script>
     const audio = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(f=800) {
+    function beep(f=1000, d=0.08) { // Sonido más corto y agudo
         const o=audio.createOscillator(), g=audio.createGain();
-        o.type='square'; o.frequency.value=f; g.gain.value=0.03;
-        o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
+        o.type='sine'; o.frequency.value=f; g.gain.value=0.02;
+        o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+d);
     }
 
     const nexos = [
@@ -50,62 +229,57 @@
         "https://piezas4websites.com", "https://db.piezas4websites.com"
     ];
 
-    async function checkNode(url) {
+    async function verify(url) {
         return new Promise(res => {
             const start = Date.now();
             const img = new Image();
-            const timeout = setTimeout(() => res(false), 5000); 
+            const fail = setTimeout(() => res(false), 5000); // 5s por Piezas4WebSites lento
             
-            img.onload = () => {
-                const rtt = Date.now() - start;
-                clearTimeout(timeout);
-                // FILTRO AGRESIVO: Si el RTT es menor a 350ms, lo tratamos como error de Cloudflare
-                res(rtt > 350); 
-            };
+            // FILTRO ESTRICTO: 350ms para adaptowebs.com
+            img.onload = () => { clearTimeout(fail); res((Date.now() - start) > 350); };
+            img.onerror = () => { clearTimeout(fail); res((Date.now() - start) > 350); };
             
-            img.onerror = () => {
-                const rtt = Date.now() - start;
-                clearTimeout(timeout);
-                // El error 1033 de adaptowebs.com está entrando en el rango de los 250ms
-                // Subimos la valla a 350ms para asegurar
-                res(rtt > 350); 
-            };
             img.src = `${url}/favicon.ico?v=${start}`;
         });
     }
 
-    async function analizarImperio() {
+    async function iniciarGrial() {
         if (audio.state === 'suspended') audio.resume();
+        beep(440, 0.2); // Tono de inicio
+        
         document.getElementById('boot-sector').style.display = 'none';
         document.getElementById('monitor-ui').style.display = 'block';
+        
         const list = document.getElementById('nodes-list');
-        let activos = 0;
+        const screenOff = document.getElementById('offline-screen');
+        let counter = 0;
 
-        for (const url of nexos) {
-            // DOBLE COMPROBACIÓN: Si pasa el primer filtro, lo validamos una segunda vez
-            const isUp = await checkNode(url);
-            
-            if (isUp) {
-                activos++; beep(1000);
-                const name = url.replace("https://", "").toUpperCase();
+        for (const node of nexos) {
+            const online = await verify(node);
+            if (online) {
+                counter++;
+                beep(1200, 0.05); // Sonido de nodo rápido
+                
                 const el = document.createElement('a');
-                el.className = 'node-link';
-                el.href = url;
+                el.className = 'node-item';
+                el.href = node;
                 el.target = "_blank";
-                el.innerHTML = `<span>> ${name}</span><div class="dot"></div>`;
+                // Limpieza del nombre para diseño minimalista
+                const name = node.replace("https://", "").replace(".com", "").replace(".work", "").replace(".store", "").toUpperCase();
+                el.innerHTML = `<span>> ${name}</span><div class="alive-dot"></div>`;
                 list.appendChild(el);
-                await new Promise(r => setTimeout(r, 100));
+                await new Promise(r => setTimeout(r, 150));
             }
         }
 
-        if (activos === 0) {
-            beep(200);
+        document.getElementById('scan-label').innerText = `SONDEO_FINALIZADO: ${counter} NEXOS_ACTIVOS`;
+        
+        if (counter === 0) {
+            beep(150, 0.4); // Sonido de error crítico
             document.getElementById('monitor-ui').style.display = 'none';
-            document.getElementById('offline-screen').style.display = 'block';
+            screenOff.style.display = 'block';
         }
     }
 </script>
 </body>
 </html>
-
-
