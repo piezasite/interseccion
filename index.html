@@ -24,7 +24,7 @@
 
 <div class="terminal">
     <div class="glitch">SYNTAX_SANCTUARY.sys</div>
-    <div id="boot-sector"><button class="start-btn" onclick="analizarImperio()">[ ESCANEAR_ERRORES_CLOUDFLARE ]</button></div>
+    <div id="boot-sector"><button class="start-btn" onclick="analizarImperio()">[ INICIAR_SONDEO_PRIORITARIO ]</button></div>
     <div id="monitor-ui" style="display:none;"><div id="nodes-list"></div></div>
     <div id="offline-screen">
         <p style="color:var(--neon-red); font-weight:bold;">[!] STATUS: TUNNEL_DISCONNECTED</p>
@@ -42,12 +42,14 @@
         o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
     }
 
+    // LISTA ORDENADA: phpframe y piezas4websites primero
     const nexos = [
+        "https://phpframe.work", "https://db.phpframe.work",
+        "https://piezas4websites.com", "https://db.piezas4websites.com",
         "https://adaptowebs.com", "https://db.adaptowebs.com",
         "https://mercancia.store", "https://db.mercancia.store",
-        "https://phpframe.work", "https://db.phpframe.work",
         "https://syntaxsanctuary.com", "https://db.syntaxsanctuary.com",
-        "https://timefinancehub.com"
+        "https://timefinancehub.com", "https://db.timefinancehub.com"
     ];
 
     async function analizarImperio() {
@@ -58,45 +60,32 @@
         let activos = 0;
 
         for (const url of nexos) {
-            try {
-                // Hacemos un fetch a la raíz del sitio
-                const response = await fetch(`${url}?t=${Date.now()}`, { mode: 'no-cors' });
+            const start = Date.now();
+            const vivo = await new Promise(res => {
+                const img = new Image();
+                const timeout = setTimeout(() => res(false), 3000);
                 
-                /* TRUCO MAESTRO: 'no-cors' no nos deja leer el body, pero si el túnel 
-                   de Cloudflare está caído, el fetch suele fallar o dar un tipo de 
-                   respuesta opaca distinta. 
-                   
-                   Para un scraping real desde JS sin backend, usaremos la técnica del 
-                   favicon pero con un validador de tiempo de respuesta "Anti-1033".
-                */
-                const start = Date.now();
-                const vivo = await new Promise(res => {
-                    const img = new Image();
-                    const timeout = setTimeout(() => res(false), 2500);
-                    img.onload = () => { clearTimeout(timeout); res(true); };
-                    img.onerror = () => {
-                        clearTimeout(timeout);
-                        // Si Cloudflare devuelve el Error 1033, la respuesta es 
-                        // casi instantánea (<200ms). Si el contenedor está vivo, 
-                        // suele tardar un poco más en procesar.
-                        const rtt = Date.now() - start;
-                        res(rtt > 200); 
-                    };
-                    img.src = `${url}/favicon.ico?v=${start}`;
-                });
+                img.onload = () => { clearTimeout(timeout); res(true); };
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    const rtt = Date.now() - start;
+                    // Filtro de 100ms para diferenciar Error 1033 (rápido) de Docker (lento)
+                    res(rtt > 100); 
+                };
+                img.src = `${url}/favicon.ico?v=${start}`;
+            });
 
-                if (vivo) {
-                    activos++; beep(1000);
-                    const name = url.replace("https://", "").toUpperCase();
-                    const el = document.createElement('a');
-                    el.className = 'node-link';
-                    el.href = url;
-                    el.target = "_blank";
-                    el.innerHTML = `<span>> ${name}</span><div class="dot"></div>`;
-                    list.appendChild(el);
-                    await new Promise(r => setTimeout(r, 150));
-                }
-            } catch (e) {}
+            if (vivo) {
+                activos++; beep(1000);
+                const name = url.replace("https://", "").toUpperCase();
+                const el = document.createElement('a');
+                el.className = 'node-link';
+                el.href = url;
+                el.target = "_blank";
+                el.innerHTML = `<span>> ${name}</span><div class="dot"></div>`;
+                list.appendChild(el);
+                await new Promise(r => setTimeout(r, 150));
+            }
         }
 
         if (activos === 0) {
