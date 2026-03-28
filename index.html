@@ -2,132 +2,241 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SYNTAX SANCTUARY | Terminal de Estado</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        /* [Mantenemos tu estilo Neon-Noir previo] */
         :root {
-            --bg: #050505; --neon-cyan: #00f2ff; --neon-purple: #bc13fe;
-            --neon-green: #39ff14; --neon-red: #ff003c; --glass: rgba(13, 13, 13, 0.85);
+            --bg: #050505;
+            --neon-cyan: #00f2ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #39ff14;
+            --neon-red: #ff003c;
+            --glass: rgba(10, 10, 10, 0.98);
         }
+
         body {
-            background-color: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace;
-            margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh;
+            background-color: var(--bg);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
+
+        /* Scanlines & CRT Effect */
         body::before {
-            content: " "; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            content: " ";
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 10;
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
         }
-        .terminal-container {
-            width: 90%; max-width: 550px; background: var(--glass); border: 2px solid var(--neon-purple);
-            box-shadow: 0 0 20px rgba(188, 19, 254, 0.3); padding: 30px; position: relative; z-index: 5; border-radius: 5px;
+
+        .terminal-frame {
+            width: 92%;
+            max-width: 500px;
+            background: var(--glass);
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 25px rgba(188, 19, 254, 0.4), inset 0 0 10px rgba(188, 19, 254, 0.2);
+            padding: 25px;
+            position: relative;
+            z-index: 10;
+            border-radius: 4px;
         }
-        .glitch {
-            font-size: 1.8rem; font-weight: bold; text-transform: uppercase;
-            text-shadow: 0.05em 0 0 var(--neon-cyan), -0.05em -0.025em 0 var(--neon-purple);
-            animation: glitch 500ms infinite; margin-bottom: 20px;
+
+        .header-glitch {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 2px 0 var(--neon-cyan), -2px 0 var(--neon-purple);
+            margin-bottom: 20px;
+            letter-spacing: 3px;
         }
-        @keyframes glitch {
-            0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); } 100% { transform: translate(0); }
+
+        .status-line {
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: center;
         }
-        .service-item {
-            background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan);
-            margin: 10px 0; padding: 12px 15px; display: flex; justify-content: space-between;
-            align-items: center; text-decoration: none; color: var(--neon-cyan); transition: 0.2s;
+
+        .nodes-container {
+            max-height: 320px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-purple) transparent;
         }
-        .service-item:hover { background: rgba(0, 242, 255, 0.15); transform: translateX(5px); }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
-        #offline-ui { display: none; text-align: center; }
-        .archivista-img { width: 100%; max-width: 350px; border: 1px solid var(--neon-purple); margin: 15px 0; }
-        .wa-btn {
-            display: inline-block; border: 2px solid var(--neon-green); color: var(--neon-green);
-            padding: 12px 20px; text-decoration: none; font-weight: bold; margin-top: 20px; text-transform: uppercase;
+
+        .node-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 242, 255, 0.04);
+            border-left: 3px solid var(--neon-cyan);
+            margin: 6px 0;
+            padding: 12px;
+            text-decoration: none;
+            color: var(--neon-cyan);
+            font-size: 0.85rem;
+            transition: 0.2s;
+            animation: emerge 0.3s ease-out forwards;
         }
-        .wa-btn:hover { background: var(--neon-green); color: black; box-shadow: 0 0 20px var(--neon-green); }
+
+        .node-link:hover {
+            background: rgba(0, 242, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        @keyframes emerge { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .tag { font-size: 0.6rem; color: #555; border: 1px solid #333; padding: 2px 4px; margin-right: 8px; vertical-align: middle; }
+        .alive-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+
+        /* Mantenimiento UI */
+        #offline-screen { display: none; text-align: center; animation: fadeIn 1s; }
+        .avatar { width: 100%; max-width: 280px; border: 1px solid var(--neon-purple); margin: 15px 0; filter: grayscale(0.2) contrast(1.1); }
+        .wa-button {
+            display: inline-block;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 24px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .btn-init {
+            background: none;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 15px 30px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="terminal-container">
-    <div class="glitch">SYNTAX_SANCTUARY.sys</div>
-    <div id="status-scanner">_INICIANDO_SONDEO_DE_NODOS...</div>
-    <div id="online-list"></div>
+<div class="terminal-frame">
+    <div class="header-glitch">SYNTAX_SANCTUARY</div>
+    
+    <div id="boot-sector">
+        <button class="btn-init" onclick="initEmpire()">[ EJECUTAR_PROTOCOLO_DE_ACCESO ]</button>
+    </div>
 
-    <div id="offline-ui">
-        <p style="color:var(--neon-red); font-weight:bold;">>> [ STATUS: EMPIRE_OFFLINE ] <<</p>
-        <img src="avatar.png" class="archivista-img" alt="Archivista">
-        <p style="font-size: 0.85rem;">toy atendiendo mi trabajo en el mundo real, pero en cuanto vuelba a iniciar sesion eni imperio digital mis servicios estaran disponibles.</p>
-        <a href="https://wa.me/15058619970" class="wa-btn">[ LINEA_DIRECTA_WHATSAPP ]</a>
+    <div id="monitor-ui" style="display:none;">
+        <div id="scan-label" class="status-line">ESTABLECIENDO_CONEXIÓN_CON_NODOS...</div>
+        <div id="nodes-list" class="nodes-container"></div>
+    </div>
+
+    <div id="offline-screen">
+        <p style="color:var(--neon-red); font-weight:bold; letter-spacing: 2px;">[!] ALERTA: SISTEMAS_DESCONECTADOS</p>
+        <img src="avatar.png" class="avatar" alt="Archivista">
+        <p style="font-size: 0.8rem; line-height: 1.5; color: #bbb;">
+            toy atendiendo mi trabajo en el mundo real, pero en cuanto vuelba a iniciar sesion eni imperio digital mis servicios estaran disponibles.
+        </p>
+        <a href="https://wa.me/15058619970" class="wa-button">[ CONTACTO_DIRECTO_WHATSAPP ]</a>
     </div>
 </div>
 
 <script>
-    const servicios = [
-        { nombre: "ADAPTOWEBS.COM", url: "https://adaptowebs.com" },
-        { nombre: "MERCANCIA.STORE", url: "https://mercancia.store" },
-        { nombre: "PHPFRAME.WORK", url: "https://phpframe.work" },
-        { nombre: "SYNTAXSANCTUARY.COM", url: "https://syntaxsanctuary.com" },
-        { nombre: "TIMEFINANCEHUB.COM", url: "https://timefinancehub.com" }
+    const audio = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playTone(freq, type, dur, vol) {
+        const osc = audio.createOscillator();
+        const g = audio.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audio.currentTime);
+        g.gain.setValueAtTime(vol, audio.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + dur);
+        osc.connect(g);
+        g.connect(audio.destination);
+        osc.start();
+        osc.stop(audio.currentTime + dur);
+    }
+
+    const nexos = [
+        { id: "ROOT", n: "SYNTAXSANCTUARY.COM", u: "https://syntaxsanctuary.com" },
+        { id: "PMA", n: "DB.SYNTAXSANCTUARY.COM", u: "https://db.syntaxsanctuary.com" },
+        { id: "WEB", n: "ADAPTOWEBS.COM", u: "https://adaptowebs.com" },
+        { id: "PMA", n: "DB.ADAPTOWEBS.COM", u: "https://db.adaptowebs.com" },
+        { id: "SHOP", n: "MERCANCIA.STORE", u: "https://mercancia.store" },
+        { id: "PMA", n: "DB.MERCANCIA.STORE", u: "https://db.mercancia.store" },
+        { id: "CORE", n: "PHPFRAME.WORK", u: "https://phpframe.work" },
+        { id: "PMA", n: "DB.PHPFRAME.WORK", u: "https://db.phpframe.work" },
+        { id: "FIN", n: "TIMEFINANCEHUB.COM", u: "https://timefinancehub.com" }
     ];
 
-    function checkService(service) {
-        return new Promise((resolve) => {
+    async function verify(url) {
+        return new Promise((res) => {
             const img = new Image();
-            // Intentamos cargar el favicon del sitio (casi todos tienen uno)
-            // Agregamos un timestamp para evitar la caché del navegador
-            img.src = `${service.url}/favicon.ico?t=${Date.now()}`;
+            const start = Date.now();
+            // Timeout de 3 segundos para evitar esperas infinitas en móviles
+            const fail = setTimeout(() => { img.src = ""; res(false); }, 3000);
 
-            // Si la imagen carga o da error de "403/CORS", significa que el servidor RESPONDIÓ
-            img.onload = () => resolve(true);
-            
-            // En muchos casos, si el servidor está vivo pero no hay favicon, 
-            // dará error pero el tiempo de respuesta será rápido.
+            // Blindaje: Cache buster por milisegundos
+            img.src = `${url}/favicon.ico?v=${start}`;
+
+            img.onload = () => { clearTimeout(fail); res(true); };
             img.onerror = () => {
-                // Si el servidor está caído (Docker off), tardará mucho en fallar o dará error de red.
-                // Para simplificar en JS estático, si el evento onerror se dispara rápido, suele estar vivo.
-                resolve(true); 
+                clearTimeout(fail);
+                // Si el error de red es casi instantáneo (< 600ms), el servidor está vivo pero bloquea CORS
+                res((Date.now() - start) < 600);
             };
-
-            // Timeout de seguridad: Si en 5 segundos no hay nada, está muerto.
-            setTimeout(() => resolve(false), 5000);
         });
     }
 
-    async function init() {
-        const list = document.getElementById('online-list');
-        const offline = document.getElementById('offline-ui');
-        const scanner = document.getElementById('status-scanner');
-        let activeCount = 0;
+    async function initEmpire() {
+        if (audio.state === 'suspended') audio.resume();
+        playTone(440, 'sine', 0.2, 0.1); // Pitido de inicio
+        
+        document.getElementById('boot-sector').style.display = 'none';
+        document.getElementById('monitor-ui').style.display = 'block';
+        
+        const list = document.getElementById('nodes-list');
+        const screenOff = document.getElementById('offline-screen');
+        let counter = 0;
 
-        // Ejecutamos las pruebas en paralelo para mayor velocidad
-        const resultados = await Promise.all(servicios.map(async (s) => {
-            const isUp = await checkService(s);
-            if (isUp) {
-                activeCount++;
-                const item = document.createElement('a');
-                item.className = 'service-item';
-                item.href = s.url;
-                item.target = "_blank";
-                item.innerHTML = `<span>> ${s.nombre}</span><div class="dot"></div>`;
-                list.appendChild(item);
+        for (const node of nexos) {
+            const online = await verify(node.u);
+            if (online) {
+                counter++;
+                playTone(1200, 'square', 0.05, 0.05); // Sonido de nodo encontrado
+                
+                const el = document.createElement('a');
+                el.className = 'node-link';
+                el.href = node.u;
+                el.target = "_blank";
+                el.innerHTML = `<div><span class="tag">${node.id}</span>${node.n}</div><div class="alive-dot"></div>`;
+                list.appendChild(el);
+                await new Promise(r => setTimeout(r, 150));
             }
-            return isUp;
-        }));
+        }
 
-        scanner.style.display = 'none';
-        if (activeCount === 0) {
-            offline.style.display = 'block';
+        document.getElementById('scan-label').innerText = `PROTOCOLO_FINALIZADO: ${counter} NODOS_ACTIVOS`;
+        
+        if (counter === 0) {
+            playTone(150, 'sawtooth', 0.5, 0.1); // Sonido de error crítico
+            document.getElementById('monitor-ui').style.display = 'none';
+            screenOff.style.display = 'block';
         }
     }
-
-    init();
 </script>
 </body>
 </html>
-
-
