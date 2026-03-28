@@ -13,8 +13,8 @@
             --gold: #d4af37;
             --gold-bright: #f9e076;
             --gold-dark: #b8860b;
-            --glass: rgba(15, 23, 42, 0.8);
-            --border-glass: rgba(212, 175, 55, 0.2);
+            --glass: rgba(15, 23, 42, 0.85);
+            --border-glass: rgba(212, 175, 55, 0.25);
             --online: #10b981;
             --offline: #ef4444;
         }
@@ -35,12 +35,12 @@
             background-image: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         }
 
-        /* Scanlines */
+        /* Scanlines y ruido de fondo estético */
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
             background-size: 100% 4px;
             z-index: 100;
             pointer-events: none;
@@ -50,74 +50,79 @@
             width: 92%;
             max-width: 480px;
             background: var(--glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--border-glass);
             border-radius: 12px;
             padding: 35px;
             position: relative;
             z-index: 10;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(212, 175, 55, 0.05);
             text-align: center;
+            transition: all 0.4s ease;
         }
 
         .header {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             color: var(--gold-bright);
-            letter-spacing: 4px;
+            letter-spacing: 5px;
             text-transform: uppercase;
             margin-bottom: 25px;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            font-weight: bold;
         }
 
         .nodes-container {
-            max-height: 320px;
+            max-height: 340px;
             overflow-y: auto;
             margin: 20px 0;
-            padding-right: 5px;
+            padding-right: 8px;
         }
 
         .node-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(100, 116, 139, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            margin: 10px 0;
-            padding: 15px;
+            background: rgba(100, 116, 139, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            margin: 12px 0;
+            padding: 16px;
             text-decoration: none;
             color: var(--text-main);
-            border-radius: 6px;
+            border-radius: 8px;
             transition: 0.3s;
             animation: slideIn 0.4s ease-out forwards;
         }
 
         .node-card:hover {
             border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.05);
-            transform: translateX(5px);
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateX(6px);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
         }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
 
         .status-dot {
-            width: 8px; height: 8px;
+            width: 9px; height: 9px;
             border-radius: 50%;
             background: var(--online);
-            box-shadow: 0 0 10px var(--online);
+            box-shadow: 0 0 12px var(--online);
         }
 
         .btn-action {
             width: 100%;
-            background: transparent;
+            background: rgba(212, 175, 55, 0.05);
             border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 16px;
+            color: var(--gold-bright);
+            padding: 18px;
             font-family: inherit;
             font-weight: bold;
             text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: 0.3s;
             margin-top: 10px;
         }
@@ -125,15 +130,37 @@
         .btn-action:hover {
             background: var(--gold);
             color: var(--bg-color);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
         }
 
-        #offline-screen { display: none; }
-        .avatar { width: 100%; max-width: 240px; border-radius: 8px; border: 1px solid var(--gold-dark); margin: 20px 0; opacity: 0.8; }
-        .narrative { font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; font-style: italic; }
+        /* Pantalla de ausencia / Mantenimiento */
+        #offline-screen { display: none; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .avatar { 
+            width: 100%; 
+            max-width: 250px; 
+            border-radius: 8px; 
+            border: 1px solid var(--gold-dark); 
+            margin: 22px 0; 
+            opacity: 0.85;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        
+        .narrative { 
+            font-size: 0.8rem; 
+            color: var(--text-muted); 
+            line-height: 1.7; 
+            font-style: italic; 
+            padding: 0 10px;
+            margin-bottom: 25px;
+        }
 
-        ::-webkit-scrollbar { width: 4px; }
+        /* Scrollbar estilizada */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
     </style>
 </head>
 <body>
@@ -142,7 +169,7 @@
     <div class="header">SYNTAX_SANCTUARY</div>
     
     <div id="boot-sector">
-        <button class="btn-action" onclick="deepScan()">[ EJECUTAR_SONDEO_HIBRIDO ]</button>
+        <button class="btn-action" onclick="desplegarImperio()">[ ACCEDER_AL_GRIAL ]</button>
     </div>
 
     <div id="monitor-ui" style="display:none;">
@@ -150,24 +177,26 @@
     </div>
 
     <div id="offline-screen">
-        <div style="color:var(--offline); font-weight:bold; margin-bottom:10px;">[!] STATUS: DISCONNECTED</div>
+        <div style="color:var(--offline); font-weight:bold; letter-spacing: 2px; margin-bottom:10px;">[!] ESTADO: EN_REPOSO</div>
         <img src="avatar.png" class="avatar" alt="Archivista">
         <p class="narrative">
             "Mientras purifico textiles en el ciclo de luz, mi mente transmuta código en las sombras. Mis nexos duermen esperando el retorno del constructor."
         </p>
-        <a href="https://wa.me/15058619970" class="btn-action" style="text-decoration:none; display:block;">[ CONTACTO_DIRECTO_WA ]</a>
+        <a href="https://wa.me/15058619970" class="btn-action" style="text-decoration:none; display:block;">[ CANAL_DIRECTO_WA ]</a>
     </div>
 </div>
 
 <script>
     const audio = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(f=1000) {
-        const o=audio.createOscillator(), g=audio.createGain();
-        o.type='sine'; o.frequency.value=f; g.gain.value=0.02;
-        o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
+    function emitirTono(f=1000) {
+        try {
+            const o=audio.createOscillator(), g=audio.createGain();
+            o.type='sine'; o.frequency.value=f; g.gain.value=0.03;
+            o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
+        } catch(e) {}
     }
 
-    // Lista ordenada según tu requerimiento
+    // El mapa completo del Imperio Digital
     const nexos = [
         "https://adaptowebs.com", "https://db.adaptowebs.com",
         "https://mercancia.store", "https://db.mercancia.store",
@@ -177,48 +206,53 @@
         "https://piezas4websites.com", "https://db.piezas4websites.com"
     ];
 
-    async function deepScan() {
+    async function desplegarImperio() {
         if (audio.state === 'suspended') audio.resume();
         document.getElementById('boot-sector').style.display = 'none';
         document.getElementById('monitor-ui').style.display = 'block';
+        
         const list = document.getElementById('nodes-list');
         let activos = 0;
 
         for (const url of nexos) {
             try {
-                const start = Date.now();
-                // Híbrido: Comprobamos latencia Y el contenido del archivo PHP
-                const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), 4500);
-
-                const res = await fetch(`${url}/status.php?v=${start}`, { 
-                    mode: 'cors', 
-                    signal: controller.signal 
+                // Validación estricta por llave criptográfica
+                const res = await fetch(`${url}/status.php?v=${Date.now()}`, { 
+                    mode: 'cors',
+                    cache: 'no-store'
                 });
                 
+                // Si Cloudflare intercepta, devolverá HTML y esto fallará silenciosamente enviándolo al catch
                 const data = await res.json();
-                const rtt = Date.now() - start;
-                clearTimeout(tid);
 
-                // BLINDAJE: Solo si la llave es correcta Y la latencia es real (>250ms por el túnel)
-                if (data.key === "syntax-sanctuary-active" && rtt > 250) {
-                    activos++; beep(1200);
+                // Si es nuestro servidor, devolverá la llave
+                if (data.key === "syntax-sanctuary-active") {
+                    activos++; 
+                    emitirTono(1200);
+                    
                     const el = document.createElement('a');
                     el.className = 'node-card';
                     el.href = url;
                     el.target = "_blank";
+                    
+                    // Limpieza visual para el dashboard
                     const label = url.replace("https://", "").toUpperCase();
                     el.innerHTML = `<span>> ${label}</span><div class="status-dot"></div>`;
+                    
                     list.appendChild(el);
+                    
+                    // Pequeña pausa para el efecto cascada visual
                     await new Promise(r => setTimeout(r, 120));
                 }
-            } catch (e) {
-                console.warn(`Nodo ${url} ignorado (Fallo de firma o latencia).`);
+            } catch (error) {
+                // Nodo apagado, error 1033 o sin el archivo status.php
+                // Se ignora y el escáner continúa
             }
         }
 
+        // Si la bóveda está vacía, mostramos la realidad
         if (activos === 0) {
-            beep(200);
+            emitirTono(250);
             document.getElementById('monitor-ui').style.display = 'none';
             document.getElementById('offline-screen').style.display = 'block';
         }
