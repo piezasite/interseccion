@@ -185,239 +185,95 @@
         <a href="https://wa.me/15058619970" class="btn-action" style="text-decoration:none; display:block;">[ CANAL_DIRECTO_WA ]</a>
     </div>
 </div>
-<div id="aw-gatekeeper">
 
-
-<script>
-    const audio = new (window.AudioContext || window.webkitAudioContext)();
-    function emitirTono(f=1000) {
-        try {
-            const o=audio.createOscillator(), g=audio.createGain();
-            o.type='sine'; o.frequency.value=f; g.gain.value=0.03;
-            o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime+0.1);
-        } catch(e) {}
-    }
-
-    // El mapa completo del Imperio Digital
-    const nexos = [
-        "https://adaptowebs.com", "https://db.adaptowebs.com",
-        "https://mercancia.store", "https://db.mercancia.store",
-        "https://syntaxsanctuary.com", "https://db.syntaxsanctuary.com",
-        "https://timefinancehub.com", "https://db.timefinancehub.com",
-        "https://phpframe.work", "https://db.phpframe.work",
-        "https://piezas4websites.com", "https://db.piezas4websites.com"
-    ];
-
-    async function desplegarImperio() {
-        if (audio.state === 'suspended') audio.resume();
-        document.getElementById('boot-sector').style.display = 'none';
-        document.getElementById('monitor-ui').style.display = 'block';
-        
-        const list = document.getElementById('nodes-list');
-        let activos = 0;
-
-        for (const url of nexos) {
-            try {
-                // Validación estricta por llave criptográfica
-                const res = await fetch(`${url}/status.php?v=${Date.now()}`, { 
-                    mode: 'cors',
-                    cache: 'no-store'
-                });
-                
-                // Si Cloudflare intercepta, devolverá HTML y esto fallará silenciosamente enviándolo al catch
-                const data = await res.json();
-
-                // Si es nuestro servidor, devolverá la llave
-                if (data.key === "syntax-sanctuary-active") {
-                    activos++; 
-                    emitirTono(1200);
-                    
-                    const el = document.createElement('a');
-                    el.className = 'node-card';
-                    el.href = url;
-                    el.target = "_blank";
-                    
-                    // Limpieza visual para el dashboard
-                    const label = url.replace("https://", "").toUpperCase();
-                    el.innerHTML = `<span>> ${label}</span><div class="status-dot"></div>`;
-                    
-                    list.appendChild(el);
-                    
-                    // Pequeña pausa para el efecto cascada visual
-                    await new Promise(r => setTimeout(r, 120));
-                }
-            } catch (error) {
-                // Nodo apagado, error 1033 o sin el archivo status.php
-                // Se ignora y el escáner continúa
-            }
-        }
-
-        // Si la bóveda está vacía, mostramos la realidad
-        if (activos === 0) {
-            emitirTono(250);
-            document.getElementById('monitor-ui').style.display = 'none';
-            document.getElementById('offline-screen').style.display = 'block';
-        }
-    }
-</script>
     <script>
 (function() {
-    // 1. Crear e inyectar los ESTILOS (CSS)
-    const css = `
-        body.aw-locked { overflow: hidden !important; height: 100vh !important; }
-        #aw-portal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; z-index: 9999999; display: flex;
-            justify-content: center; align-items: center;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-        }
-        .aw-modal-box {
-            width: 90%; max-width: 500px; padding: 35px;
-            background: #fff; border: 2px solid #d32f2f;
-            border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.1);
-        }
-        .aw-brand { color: #d32f2f; font-weight: 900; font-size: 1.8rem; display: block; margin-bottom: 5px; }
-        .aw-tagline { font-size: 0.7rem; font-weight: 700; color: #999; text-transform: uppercase; margin-bottom: 20px; display: block; }
-        .aw-content {
-            background: #f9f9f9; border-radius: 10px; padding: 15px; 
-            height: 250px; overflow-y: auto; font-size: 0.9rem; 
-            line-height: 1.6; color: #444; margin-bottom: 20px; border: 1px solid #eee;
-        }
-        .aw-label { display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; cursor: pointer; margin-bottom: 20px; font-weight: 600; }
-        .aw-label input { scale: 1.3; accent-color: #d32f2f; margin-top: 3px; }
-        .aw-btn {
-            width: 100%; padding: 15px; border: none; border-radius: 10px;
-            background: #d32f2f; color: #fff; font-weight: 800; font-size: 1rem;
-            cursor: pointer; transition: 0.3s;
-        }
-        .aw-btn:disabled { background: #ffcdd2; cursor: not-allowed; }
-    `;
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = css;
-    document.head.appendChild(styleSheet);
-
-    // 2. Crear e inyectar la ESTRUCTURA (HTML)
-    const modalHTML = `
-        <div id="aw-portal-overlay">
-            <div class="aw-modal-box">
-                <span class="aw-brand">ADAPTOWEBS</span>
-                <span class="aw-tagline">Entidad Digital • Conocimiento Aplicado</span>
-                <div class="aw-content">
-                    <strong>AVISO IMPORTANTE:</strong> Este proyecto es una iniciativa 100% digital bajo autoría independiente. No cuenta con sede física ni locales comerciales.<br><br>
-                    <strong>ORIGEN TÉCNICO:</strong> La arquitectura y scripts presentados son fruto de la formación en <strong>Udemy</strong> y la optimización mediante <strong>Inteligencia Artificial (IA)</strong>. El valor reside en el esfuerzo de desarrollo y la lógica implementada.<br><br>
-                    <strong>ESTADO DEL SOFTWARE:</strong> Se entrega "As-Is" (como está). El autor no asume responsabilidad por el uso externo o fallos técnicos, al tratarse de un entorno de desarrollo continuo.<br><br>
-                    <strong>SIN REGISTROS:</strong> Al continuar, aceptas que no existen marcas ni LLCs registradas de momento, reconociendo la propiedad intelectual del autor.
-                </div>
-                <label class="aw-label">
-                    <input type="checkbox" id="aw-verify">
-                    <span>Acepto la situación actual del proyecto y deseo continuar.</span>
-                </label>
-                <button id="aw-btn-go" class="aw-btn" disabled>ACCEDER AHORA</button>
-            </div>
-        </div>
-    `;
-    
-    // Insertar el HTML al final del body
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // 3. Lógica de CONTROL
-    const overlay = document.getElementById('aw-portal-overlay');
-    const checkbox = document.getElementById('aw-verify');
-    const button = document.getElementById('aw-btn-go');
-
-    // Bloquear scroll
-    document.body.classList.add('aw-locked');
-
-    checkbox.addEventListener('change', function() {
-        button.disabled = !this.checked;
-    });
-
-    button.addEventListener('click', function() {
-        overlay.remove(); // Elimina el modal del DOM completamente
-        document.body.classList.remove('aw-locked');
-        console.log("Acceso Adaptowebs: Autorizado.");
-    });
-})();
-</script>
-<script>
-(function() {
+    // 1. Configuración y Estado Global
+    const STORAGE_KEY_LEGAL = 'aw_consent_verified';
     const API_URL = 'https://adaptowebs.com/historias.php';
-    
-    // Inyectar Botón de Cámara y Visor
+    let mediaRecorder;
+    let chunks = [];
+
+    // 2. Inyección de estilos unificada
+    const style = document.createElement("style");
+    style.innerHTML = `
+        .aw-lock { overflow: hidden !important; }
+        #aw-master-layer { position:fixed; top:0; left:0; width:100%; height:100%; z-index:999999; }
+        .aw-hidden { display: none !important; }
+        .aw-visible { display: flex !important; }
+    `;
+    document.head.appendChild(style);
+
+    // 3. Estructura HTML Única (Contiene todo)
     document.body.insertAdjacentHTML('beforeend', `
-        <button id="aw-cam-btn" style="position:fixed; bottom:20px; left:20px; z-index:9999; background:#d32f2f; border:none; border-radius:50%; width:60px; height:60px; color:white; font-size:24px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3);">📷</button>
-        <div id="aw-cam-ui" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:100000; display:none; flex-direction:column; align-items:center; justify-content:center;">
-            <video id="aw-prev" autoplay muted style="width:90%; max-width:400px; border-radius:15px; transform:scaleX(-1);"></video>
-            <div style="margin-top:20px;">
-                <button id="aw-rec-start" style="padding:15px 30px; border-radius:30px; border:none; background:#d32f2f; color:white; font-weight:bold;">GRABAR 10s</button>
-                <button onclick="location.reload()" style="background:none; border:1px solid #fff; color:#fff; padding:10px; margin-left:10px;">Cerrar</button>
+        <div id="aw-master-layer" class="aw-visible">
+            <div id="aw-legal-modal" style="background:#fff; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                <div style="max-width:400px; text-align:center;">
+                    <h1>ADAPTOWEBS</h1>
+                    <p>Entidad digital independiente. Acepta términos para continuar.</p>
+                    <input type="checkbox" id="aw-accept-check"> Acepto.<br><br>
+                    <button id="aw-btn-start" disabled>ACCEDER</button>
+                </div>
+            </div>
+            
+            <div id="aw-cam-ui" class="aw-hidden" style="background:#000; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column;">
+                <video id="aw-prev" autoplay muted style="width:90%; border-radius:15px;"></video>
+                <div style="margin-top:20px;">
+                    <button id="aw-rec-btn" style="padding:15px; background:red; color:white; border:none; border-radius:50px;">GRABAR</button>
+                </div>
             </div>
         </div>
     `);
 
-    // --- LÓGICA DE CAPTURA ---
-    let recorder;
-    let chunks = [];
+    // 4. Lógica de Control (El "Cerebro")
+    const legalModal = document.getElementById('aw-legal-modal');
+    const camUI = document.getElementById('aw-cam-ui');
+    const recBtn = document.getElementById('aw-rec-btn');
+    const prev = document.getElementById('aw-prev');
 
-    document.getElementById('aw-cam-btn').onclick = async () => {
+    // Botón Aceptar Legal
+    document.getElementById('aw-accept-check').onchange = (e) => document.getElementById('aw-btn-start').disabled = !e.target.checked;
+    
+    document.getElementById('aw-btn-start').onclick = async () => {
+        legalModal.classList.add('aw-hidden');
+        camUI.classList.add('aw-visible');
+        document.body.classList.remove('aw-lock');
+        
+        // Iniciar Cámara
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('aw-prev').srcObject = stream;
-        document.getElementById('aw-cam-ui').style.display = 'flex';
-        recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = async () => {
-            const blob = new Blob(chunks, { type: 'video/webm' });
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = async () => {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ video: reader.result })
-                });
-                location.reload(); // Refrescar para ver la nueva esfera
-            };
+        prev.srcObject = stream;
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = uploadVideo;
+    };
+
+    // Lógica Grabación Mejorada
+    recBtn.onclick = () => {
+        if (mediaRecorder.state === "inactive") {
+            chunks = [];
+            mediaRecorder.start();
+            recBtn.innerText = "DETENER";
+            recBtn.style.background = "white";
+            recBtn.style.color = "red";
+        } else {
+            mediaRecorder.stop();
+            recBtn.innerText = "GRABANDO...";
+            recBtn.disabled = true;
+        }
+    };
+
+    async function uploadVideo() {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ video: reader.result }) });
+            location.reload(); // Recarga limpia
         };
-    };
-
-    document.getElementById('aw-rec-start').onclick = function() {
-        this.innerText = "GRABANDO...";
-        this.disabled = true;
-        recorder.start();
-        setTimeout(() => recorder.stop(), 10000); // Grabación de 10 segundos
-    };
-
-    // --- LÓGICA DE VISUALIZACIÓN GLOBAL ---
-    async function loadGlobalStories() {
-        try {
-            const res = await fetch(API_URL);
-            const stories = await res.json();
-            
-            stories.forEach(s => {
-                const sphere = document.createElement('div');
-                sphere.style = `position:fixed; width:65px; height:65px; border-radius:50%; border:3px solid #d32f2f; background:#000; overflow:hidden; z-index:998; cursor:pointer; left:${Math.random()*80}vw; top:${20 + Math.random()*60}vh; box-shadow:0 0 15px rgba(211,47,47,0.5);`;
-                
-                const vid = document.createElement('video');
-                vid.src = s.url; vid.muted = true; vid.autoplay = true; vid.loop = true;
-                vid.style = "width:100%; height:100%; object-fit:cover;";
-                
-                sphere.onclick = () => {
-                    const full = document.createElement('div');
-                    full.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000001; display:flex; align-items:center; justify-content:center;";
-                    full.innerHTML = `<video src="${s.url}" autoplay controls style="max-width:90%; border-radius:15px;"></video>`;
-                    full.onclick = () => full.remove();
-                    document.body.appendChild(full);
-                };
-
-                sphere.appendChild(vid);
-                document.body.appendChild(sphere);
-            });
-        } catch (e) { console.log("Error cargando feed global."); }
     }
-
-    // Solo cargar si aceptó términos
-    if (localStorage.getItem('aw_consent_verified')) loadGlobalStories();
 })();
-</script>
+    </script>
+    
 
 </body>
 </html>
