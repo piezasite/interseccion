@@ -53,6 +53,7 @@
         .node-sphere video { width: 100%; height: 100%; object-fit: cover; }
 
         .terminal-box { width: 90%; max-width: 450px; margin-top: 40px; text-align: center; }
+        .nodes-container { max-height: 350px; overflow-y: auto; padding-right: 5px; }
         .node-link {
             display: flex; justify-content: space-between; align-items: center;
             background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212,175,55,0.1);
@@ -64,10 +65,11 @@
         /* --- CÁMARA Y SUBIDA --- */
         #cam-overlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* Barra solo visible al subir */
-        #upload-container { width: 80%; display: none; flex-direction: column; align-items: center; margin-top: 20px; }
-        .progress-wrap { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; border: 1px solid var(--gold); }
-        #progress-bar { width: 0%; height: 100%; background: var(--online); transition: width 0.3s ease; }
+        /* Barra de progreso real */
+        #upload-container { width: 85%; max-width: 400px; display: none; flex-direction: column; align-items: center; margin-top: 25px; }
+        .progress-wrap { width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; border: 1px solid var(--gold); margin-bottom: 8px; }
+        #progress-bar { width: 0%; height: 100%; background: var(--online); transition: width 0.1s ease; }
+        #upload-stats { font-size: 0.85rem; color: var(--gold-br); letter-spacing: 1px; font-weight: bold; }
 
         .btn {
             width: 100%; padding: 18px; background: rgba(212,175,55,0.1); border: 1px solid var(--gold);
@@ -104,7 +106,7 @@
         <div class="terminal-box">
             <div style="color:var(--gold-br); font-size:1.5rem; letter-spacing:5px; margin-bottom:20px; font-weight:bold;">SYNTAX_SANCTUARY</div>
             <div id="scan-status" style="color:var(--online); font-size:0.75rem; margin-bottom:15px; letter-spacing:1px;">ESPERANDO AUTORIZACIÓN...</div>
-            <div id="nodes-list"></div>
+            <div class="nodes-container" id="nodes-list"></div>
         </div>
         <button id="cam-trigger" style="display:none;">📷</button>
     </div>
@@ -114,8 +116,9 @@
         <video id="v-preview" autoplay muted playsinline style="width:85%; max-width:400px; border:2px solid var(--gold); border-radius:12px; transform:scaleX(-1); background:#000;"></video>
         
         <div id="upload-container">
-            <div style="color:var(--online); font-size:0.7rem; margin-bottom:8px;">SUBIENDO_AL_NODO...</div>
+            <div style="color:var(--online); font-size:0.75rem; margin-bottom:8px;">[ TRANSMITIENDO DATOS AL NODO ]</div>
             <div class="progress-wrap"><div id="progress-bar"></div></div>
+            <div id="upload-stats">0.00 MB / 0.00 MB</div>
         </div>
 
         <div id="timer" style="color:var(--gold-br); font-size:2rem; font-weight:bold; margin: 20px 0;">00:60</div>
@@ -124,11 +127,9 @@
         <div id="abort-btn" onclick="location.reload()" style="margin-top:25px; text-decoration:underline; cursor:pointer; font-size:0.8rem; color: #64748b;">[ ABORTAR ]</div>
     </div>
 
-    <audio id="beep" src="https://actions.google.com/sounds/v1/foley/electronic_chime.ogg"></audio>
-
     <script>
     (function() {
-        const STORAGE_KEY = 'syntax_auth_v3';
+        const STORAGE_KEY = 'syntax_auth_v4';
         const API_STATUS = 'https://adaptowebs.com/status.php';
         const API_STORIES = 'https://adaptowebs.com/historias.php';
 
@@ -139,6 +140,7 @@
             status: document.getElementById('scan-status'),
             camBtn: document.getElementById('cam-trigger'),
             prog: document.getElementById('progress-bar'),
+            stats: document.getElementById('upload-stats'),
             uploadUI: document.getElementById('upload-container'),
             recBtn: document.getElementById('rec-btn'),
             error: document.getElementById('error-display')
@@ -146,12 +148,31 @@
 
         let recorder, chunks = [], timerInterval;
 
+        // --- SISTEMA DE AUDIO SINTÉTICO (WEB AUDIO API) ---
+        // Esto garantiza que el pitido suene siempre, sin depender de archivos externos.
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tono A5
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
         document.getElementById('check-legal').onchange = (e) => {
             document.getElementById('accept-legal').disabled = !e.target.checked;
         };
 
         document.getElementById('accept-legal').onclick = () => {
             localStorage.setItem(STORAGE_KEY, 'true');
+            // Al hacer clic, iniciamos el contexto de audio por políticas del navegador
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             bootstrap();
         };
 
@@ -165,25 +186,35 @@
             loadFeed();
         }
 
+        // --- ESCANEO DINÁMICO DE SERVICIOS ---
         async function runScanner() {
             try {
                 const res = await fetch(API_STATUS);
                 const data = await res.json();
-                if(data.status === "online") {
-                    els.status.innerText = `[ NODO_ACTIVO: ${data.key.toUpperCase()} ]`;
-                    const services = [
-                        { n: "Syntax Sanctuary", u: "https://syntaxsanctuary.com" },
-                        { n: "PHP FrameWork", u: "https://phpframe.work" },
-                        { n: "Mercancia Store", u: "https://mercancia.store" }
-                    ];
-                    for(let s of services) {
-                        await new Promise(r => setTimeout(r, 500));
-                        document.getElementById('beep').play().catch(()=>{});
-                        const link = document.createElement('a');
-                        link.href = s.u; link.target = "_blank"; link.className = 'node-link';
-                        link.innerHTML = `<span>${s.n.toUpperCase()}</span><div style="width:10px;height:10px;border-radius:50%;background:var(--online);box-shadow:0 0 5px var(--online);"></div>`;
-                        els.list.appendChild(link);
-                    }
+                
+                // Extraemos dinámicamente todos los nodos que vengan en el JSON
+                // Busca en la raíz, en data.nodos, data.servicios, etc.
+                let services = [];
+                if (Array.isArray(data)) services = data;
+                else if (data.nodos && Array.isArray(data.nodos)) services = data.nodos;
+                else if (data.servicios && Array.isArray(data.servicios)) services = data.servicios;
+                else {
+                    // Intenta extraer cualquier objeto que tenga 'nombre' dentro del JSON
+                    services = Object.values(data).filter(item => typeof item === 'object' && item !== null && item.nombre);
+                }
+
+                els.status.innerText = `[ ESCANEO COMPLETADO ]`;
+                
+                for(let s of services) {
+                    await new Promise(r => setTimeout(r, 400));
+                    playBeep(); // Llamamos al pitido sintético infalible
+                    
+                    const link = document.createElement('a');
+                    link.href = s.url || s.u || '#'; 
+                    link.target = "_blank"; 
+                    link.className = 'node-link';
+                    link.innerHTML = `<span>${(s.nombre || s.n || 'NODO').toUpperCase()}</span><div style="width:10px;height:10px;border-radius:50%;background:var(--online);box-shadow:0 0 5px var(--online);"></div>`;
+                    els.list.appendChild(link);
                 }
             } catch(e) { console.error(e); }
         }
@@ -217,7 +248,7 @@
                 document.getElementById('cam-overlay').style.display = 'flex';
                 recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
                 recorder.ondataavailable = e => chunks.push(e.data);
-                recorder.onstop = upload;
+                recorder.onstop = uploadRealTime;
             } catch(e) { els.error.innerText = "ACCESO_DENEGADO: VERIFICA PERMISOS DE CÁMARA"; }
         };
 
@@ -242,29 +273,52 @@
             recorder.stream.getTracks().forEach(t => t.stop());
             els.recBtn.style.display = "none";
             document.getElementById('abort-btn').style.display = "none";
-            els.uploadUI.style.display = "flex"; // Mostramos la barra de progreso al subir
+            els.uploadUI.style.display = "flex"; 
         }
 
-        async function upload() {
-            try {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
+        // --- SUBIDA REAL CON XHR PARA MEDIR MBs ---
+        function uploadRealTime() {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const reader = new FileReader();
+            
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                const payload = JSON.stringify({ video: reader.result });
+                
+                // Calculamos el peso real de la carga útil en MB
+                const totalBytes = payload.length;
+                const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+                
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', API_STORIES, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
 
-                // Simulamos progreso visual de subida mientras el FileReader procesa
-                let p = 0;
-                const pInt = setInterval(() => {
-                    p += 5;
-                    els.prog.style.width = p + "%";
-                    if(p >= 90) clearInterval(pInt);
-                }, 100);
-
-                reader.onloadend = async () => {
-                    const res = await fetch(API_STORIES, { method: 'POST', body: JSON.stringify({ video: reader.result }) });
-                    els.prog.style.width = "100%";
-                    setTimeout(() => location.reload(), 800);
+                // Evento que lee el progreso real de subida
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const loadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                        const percent = (e.loaded / e.total) * 100;
+                        els.prog.style.width = percent + '%';
+                        els.stats.innerText = `${loadedMB} MB / ${totalMB} MB`;
+                    }
                 };
-            } catch(e) { els.error.innerText = "ERROR_NODO: FALLO EN LA TRANSMISIÓN"; }
+
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        els.prog.style.width = '100%';
+                        els.stats.innerText = `${totalMB} MB / ${totalMB} MB [ COMPLETADO ]`;
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        els.error.innerText = `ERROR_SERVIDOR: HTTP ${xhr.status}`;
+                    }
+                };
+
+                xhr.onerror = function() {
+                    els.error.innerText = "ERROR_RED: LA CONEXIÓN SE HA CORTADO";
+                };
+
+                xhr.send(payload);
+            };
         }
     })();
     </script>
