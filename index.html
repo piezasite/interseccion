@@ -7,308 +7,264 @@
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #020617;
-            --text-main: #cbd5e1;
-            --text-muted: #64748b;
+            --bg: #020617;
             --gold: #d4af37;
-            --gold-bright: #f9e076;
-            --gold-dark: #b8860b;
-            --glass: rgba(15, 23, 42, 0.85);
-            --border-glass: rgba(212, 175, 55, 0.25);
+            --gold-br: #f9e076;
             --online: #10b981;
-            --offline: #ef4444;
+            --glass: rgba(15, 23, 42, 0.98);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+        
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg);
+            color: #cbd5e1;
             font-family: 'Share Tech Mono', monospace;
-            margin: 0; height: 100vh; width: 100vw;
+            margin: 0; height: 100vh; overflow: hidden;
             display: flex; justify-content: center; align-items: center;
-            overflow: hidden;
             background-image: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         }
 
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px; z-index: 100; pointer-events: none;
+        /* --- MODAL LEGAL (BLOQUEO TOTAL) --- */
+        #aw-legal-overlay { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 10000; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .legal-modal { 
+            width: 90%; max-width: 500px; background: var(--glass); 
+            border: 1px solid var(--gold); padding: 30px; border-radius: 12px;
+            box-shadow: 0 0 60px #000;
+        }
+        .legal-text { 
+            height: 260px; overflow-y: auto; font-size: 0.85rem; line-height: 1.7; 
+            background: rgba(0,0,0,0.6); padding: 15px; border: 1px solid rgba(212,175,55,0.2);
+            margin: 20px 0; color: #cbd5e1;
         }
 
-        /* --- HEADER HISTORIAS --- */
-        #aw-feed-header { 
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 999;
-            background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-glass);
-            padding: 10px 0; display: none; gap: 15px; overflow-x: auto; align-items: center; min-height: 95px;
-        }
-
-        .aw-node-sphere { 
-            flex: 0 0 65px; height: 65px; border-radius: 50%; border: 2px solid var(--gold);
-            overflow: hidden; cursor: pointer; margin-left: 15px; background: #000;
-        }
-        .aw-node-sphere video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* --- TERMINAL CENTRAL --- */
-        .grial-terminal {
-            width: 92%; max-width: 480px; background: var(--glass);
-            border: 1px solid var(--border-glass); border-radius: 12px;
-            padding: 30px; position: relative; z-index: 10; text-align: center;
-            display: none;
-        }
-
-        .nodes-container { max-height: 280px; overflow-y: auto; margin-top: 20px; padding-right: 5px; }
+        /* --- UI PRINCIPAL --- */
+        #main-nexus { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; }
         
-        .node-card {
+        #stories-feed { 
+            width: 100%; height: 100px; border-bottom: 1px solid rgba(212,175,55,0.2);
+            display: flex; align-items: center; gap: 15px; overflow-x: auto; padding: 0 15px;
+            background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(10px);
+        }
+        .node-sphere { flex: 0 0 65px; height: 65px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; background: #000; }
+        .node-sphere video { width: 100%; height: 100%; object-fit: cover; }
+
+        .terminal-box { width: 90%; max-width: 450px; margin-top: 40px; text-align: center; }
+        .node-link {
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(100, 116, 139, 0.1); border: 1px solid rgba(212, 175, 55, 0.1);
-            margin: 10px 0; padding: 15px; border-radius: 6px;
-            animation: slideIn 0.3s ease-out; text-decoration: none; color: inherit;
+            background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212,175,55,0.1);
+            margin: 12px 0; padding: 18px; border-radius: 8px; text-decoration: none; color: inherit;
+            animation: slideIn 0.4s ease forwards; opacity: 0;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--online); box-shadow: 0 0 8px var(--online); }
-
-        /* --- UI CÁMARA Y PROGRESO --- */
-        #aw-cam-ui { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 2000; display: none; 
-            flex-direction: column; align-items: center; justify-content: center; 
-        }
+        /* --- CÁMARA Y SUBIDA --- */
+        #cam-overlay { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         
-        .progress-container { width: 80%; height: 6px; background: rgba(255,255,255,0.1); margin: 20px 0; border-radius: 3px; overflow: hidden; border: 1px solid rgba(212,175,55,0.2); }
-        #aw-progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.1s linear; }
+        /* Barra solo visible al subir */
+        #upload-container { width: 80%; display: none; flex-direction: column; align-items: center; margin-top: 20px; }
+        .progress-wrap { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; border: 1px solid var(--gold); }
+        #progress-bar { width: 0%; height: 100%; background: var(--online); transition: width 0.3s ease; }
 
-        /* --- CAPA LEGAL (WRITING EXPERTO) --- */
-        #aw-legal { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-color); z-index: 3000; display: flex; justify-content: center; align-items: center;
+        .btn {
+            width: 100%; padding: 18px; background: rgba(212,175,55,0.1); border: 1px solid var(--gold);
+            color: var(--gold-br); font-family: inherit; font-weight: bold; cursor: pointer; text-transform: uppercase;
         }
+        .btn:disabled { opacity: 0.3; }
 
-        .legal-box { width: 92%; max-width: 480px; background: var(--glass); border: 1px solid var(--gold); padding: 30px; border-radius: 12px; }
-
-        .legal-content { 
-            height: 250px; overflow-y: auto; font-size: 0.8rem; color: var(--text-main); 
-            line-height: 1.7; background: rgba(0,0,0,0.4); padding: 15px; 
-            border: 1px solid rgba(212, 175, 55, 0.1); margin: 15px 0; scrollbar-width: thin;
-        }
-
-        .btn-action {
-            width: 100%; background: rgba(212, 175, 55, 0.05); border: 1px solid var(--gold);
-            color: var(--gold-bright); padding: 18px; font-family: inherit; font-weight: bold;
-            text-transform: uppercase; letter-spacing: 2px; cursor: pointer; border-radius: 6px;
-        }
-        .btn-action:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--text-muted); color: var(--text-muted); }
-
-        #aw-cam-btn { 
-            position: fixed; bottom: 25px; right: 25px; z-index: 998; 
-            background: var(--gold); color: #000; border: none; width: 60px; height: 60px; 
-            border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: none;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        #cam-trigger { 
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; 
+            background: var(--gold); border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer;
+            box-shadow: 0 0 20px rgba(212,175,55,0.4);
         }
     </style>
 </head>
 <body>
 
-    <div id="aw-feed-header"></div>
-
-    <div class="grial-terminal" id="main-ui">
-        <div style="color:var(--gold-bright); letter-spacing: 5px; font-weight: bold; margin-bottom: 25px; font-size: 1.4rem;">SYNTAX_SANCTUARY</div>
-        <div id="status-msg" style="font-size: 0.75rem; color: var(--online); letter-spacing: 2px;">INICIALIZANDO PROTOCOLO...</div>
-        <div class="nodes-container" id="nodes-list"></div>
-    </div>
-
-    <div id="aw-legal">
-        <div class="legal-box">
-            <div style="color:var(--gold-bright); letter-spacing: 3px; font-weight: bold; text-align: center;">[ TÉRMINOS Y CONDICIONES DEL NODO ]</div>
-            <div class="legal-content">
-                <strong>1. DECLARACIÓN DE IDENTIDAD:</strong> Syntax Sanctuary es un proyecto digital independiente desarrollado por un arquitecto de software autónomo. No constituye una corporación registrada (LLC/S.A.) y opera como un nexo de herramientas experimentales.<br><br>
-                <strong>2. PROPIEDAD INTELECTUAL:</strong> Todo el código, diseño y lógica aquí desplegados son propiedad exclusiva del autor. El conocimiento técnico sintetizado proviene de formación avanzada en <strong>Udemy</strong> y procesos de optimización mediante <strong>Inteligencia Artificial (IA)</strong>. Queda prohibida la ingeniería inversa sin autorización previa.<br><br>
-                <strong>3. PRIVACIDAD Y DATOS EFÍMEROS:</strong> El sistema de "Historias Globales" captura transmisiones de video voluntarias. Dichos archivos son de carácter <strong>PÚBLICO</strong> durante un ciclo de 15 minutos, tras el cual se ejecutan protocolos de autodestrucción en el servidor. No se almacena información de identificación personal (PII) permanentemente.<br><br>
-                <strong>4. RESPONSABILIDAD DE USO:</strong> El software se entrega "AS-IS" (tal cual). El autor se deslinda de responsabilidades civiles o penales derivadas de usos externos, fallos de conectividad o interceptación de nexos por terceros.<br><br>
-                <strong>5. PROTOCOLO DE TRANSMISIÓN:</strong> Al activar la cámara, el usuario acepta que su imagen sea visible en el Feed Global durante el tiempo establecido. Límite de transmisión: 60 segundos por nexo.
+    <div id="aw-legal-overlay">
+        <div class="legal-modal">
+            <div style="color:var(--gold-br); text-align:center; letter-spacing:2px; font-weight:bold;">[ CONTRATO DE ACCESO AL NODO ]</div>
+            <div class="legal-text">
+                <strong>1. PROTECCIÓN INTELECTUAL:</strong> Todo el software y diseño bajo el sello "Syntax Sanctuary" es propiedad intelectual de su desarrollador. La arquitectura ha sido optimizada mediante formación especializada y lógica asistida por <strong>IA</strong>.<br><br>
+                <strong>2. FUNCIONALIDAD DE VIDEO:</strong> El sistema permite la <strong>grabación de video en tiempo real</strong>. Al finalizar, el archivo se aloja en el nodo por un periodo máximo de 15 minutos para visualización pública, tras lo cual se elimina de forma permanente.<br><br>
+                <strong>3. RESPONSABILIDAD:</strong> El autor no se hace responsable por el contenido grabado por los usuarios ni por fallos derivados de la conexión. El uso de esta herramienta implica la aceptación de estos términos.
             </div>
-            <label style="display:block; margin: 15px 0; font-size: 0.85rem; color: var(--gold); cursor: pointer;">
-                <input type="checkbox" id="legal-chk"> RECONOZCO Y ACEPTO EL PROTOCOLO.
+            <label style="display:block; margin-bottom:20px; font-size:0.8rem; color:var(--gold); cursor:pointer;">
+                <input type="checkbox" id="check-legal"> ACEPTO TÉRMINOS Y RESPONSABILIDADES.
             </label>
-            <button id="legal-btn" class="btn-action" disabled>[ ENTRAR AL SITIO ]</button>
+            <button id="accept-legal" class="btn" disabled>INICIALIZAR PROTOCOLO</button>
         </div>
     </div>
 
-    <button id="aw-cam-btn">📷</button>
-
-    <div id="aw-cam-ui">
-        <div style="color:var(--gold-bright); margin-bottom: 15px; letter-spacing: 2px;">TRANSMITIENDO_AL_GRIAL</div>
-        <video id="aw-v-prev" autoplay muted playsinline style="width:85%; max-width:400px; border:2px solid var(--gold); border-radius:10px; transform:scaleX(-1); background:#000;"></video>
-        <div class="progress-container"><div id="aw-progress-bar"></div></div>
-        <div id="aw-rec-timer" style="color:var(--gold-bright); font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">00:60</div>
-        <button id="aw-rec-action" class="btn-action" style="width:180px; border-radius:50px;">[ REC ]</button>
-        <div id="error-log" style="color:red; font-size: 0.75rem; margin-top: 20px; text-align: center; max-width: 80%;"></div>
-        <div onclick="location.reload()" style="margin-top:25px; color:var(--text-muted); cursor:pointer; text-decoration: underline;">[ ABORTAR CONEXIÓN ]</div>
+    <div id="main-nexus">
+        <div id="stories-feed"></div>
+        <div class="terminal-box">
+            <div style="color:var(--gold-br); font-size:1.5rem; letter-spacing:5px; margin-bottom:20px; font-weight:bold;">SYNTAX_SANCTUARY</div>
+            <div id="scan-status" style="color:var(--online); font-size:0.75rem; margin-bottom:15px; letter-spacing:1px;">ESPERANDO AUTORIZACIÓN...</div>
+            <div id="nodes-list"></div>
+        </div>
+        <button id="cam-trigger" style="display:none;">📷</button>
     </div>
 
-    <audio id="beep-sound" src="https://actions.google.com/sounds/v1/foley/electronic_chime.ogg"></audio>
+    <div id="cam-overlay">
+        <div id="cam-header" style="color:var(--gold-br); margin-bottom:15px; letter-spacing:2px;">[ GRABACIÓN_EN_TIEMPO_REAL ]</div>
+        <video id="v-preview" autoplay muted playsinline style="width:85%; max-width:400px; border:2px solid var(--gold); border-radius:12px; transform:scaleX(-1); background:#000;"></video>
+        
+        <div id="upload-container">
+            <div style="color:var(--online); font-size:0.7rem; margin-bottom:8px;">SUBIENDO_AL_NODO...</div>
+            <div class="progress-wrap"><div id="progress-bar"></div></div>
+        </div>
+
+        <div id="timer" style="color:var(--gold-br); font-size:2rem; font-weight:bold; margin: 20px 0;">00:60</div>
+        <button id="rec-btn" class="btn" style="width:200px; border-radius:50px;">[ REC ]</button>
+        <div id="error-display" style="color:#ef4444; font-size:0.75rem; margin-top:20px;"></div>
+        <div id="abort-btn" onclick="location.reload()" style="margin-top:25px; text-decoration:underline; cursor:pointer; font-size:0.8rem; color: #64748b;">[ ABORTAR ]</div>
+    </div>
+
+    <audio id="beep" src="https://actions.google.com/sounds/v1/foley/electronic_chime.ogg"></audio>
 
     <script>
     (function() {
-        const CONFIG = {
-            API_STORIES: 'https://adaptowebs.com/historias.php',
-            API_STATUS: 'https://adaptowebs.com/status.php',
-            LEGAL_KEY: 'aw_legal_v2',
-            MAX_TIME: 60000
-        };
+        const STORAGE_KEY = 'syntax_auth_v3';
+        const API_STATUS = 'https://adaptowebs.com/status.php';
+        const API_STORIES = 'https://adaptowebs.com/historias.php';
 
         const els = {
-            legal: document.getElementById('aw-legal'),
-            main: document.getElementById('main-ui'),
-            nodes: document.getElementById('nodes-list'),
-            header: document.getElementById('aw-feed-header'),
-            camBtn: document.getElementById('aw-cam-btn'),
-            progress: document.getElementById('aw-progress-bar'),
-            recBtn: document.getElementById('aw-rec-action'),
-            error: document.getElementById('error-log')
+            overlay: document.getElementById('aw-legal-overlay'),
+            main: document.getElementById('main-nexus'),
+            list: document.getElementById('nodes-list'),
+            status: document.getElementById('scan-status'),
+            camBtn: document.getElementById('cam-trigger'),
+            prog: document.getElementById('progress-bar'),
+            uploadUI: document.getElementById('upload-container'),
+            recBtn: document.getElementById('rec-btn'),
+            error: document.getElementById('error-display')
         };
 
-        let recorder, chunks = [], timerInt;
+        let recorder, chunks = [], timerInterval;
 
-        function reportError(msg, e) {
-            console.error(msg, e);
-            els.error.innerText = `ERROR_CRÍTICO: ${msg} | ${e.message || 'Check Server Console'}`;
-        }
-
-        // --- FLUJO INICIAL ---
-        document.getElementById('legal-chk').onchange = (e) => document.getElementById('legal-btn').disabled = !e.target.checked;
-        
-        document.getElementById('legal-btn').onclick = () => {
-            localStorage.setItem(CONFIG.LEGAL_KEY, 'true');
-            initProject();
+        document.getElementById('check-legal').onchange = (e) => {
+            document.getElementById('accept-legal').disabled = !e.target.checked;
         };
 
-        if(localStorage.getItem(CONFIG.LEGAL_KEY)) initProject();
+        document.getElementById('accept-legal').onclick = () => {
+            localStorage.setItem(STORAGE_KEY, 'true');
+            bootstrap();
+        };
 
-        function initProject() {
-            els.legal.style.display = 'none';
-            els.main.style.display = 'block';
-            els.header.style.display = 'flex';
+        if(localStorage.getItem(STORAGE_KEY)) bootstrap();
+
+        function bootstrap() {
+            els.overlay.style.display = 'none';
+            els.main.style.display = 'flex';
             els.camBtn.style.display = 'block';
-            scanServices();
+            runScanner();
             loadFeed();
         }
 
-        // --- CARGA DE SERVICIOS (AUTO-STATUS + BEEP) ---
-        async function scanServices() {
+        async function runScanner() {
             try {
-                const res = await fetch(CONFIG.API_STATUS);
+                const res = await fetch(API_STATUS);
                 const data = await res.json();
-                els.nodes.innerHTML = '';
-                
-                for(let node of data) {
-                    await new Promise(r => setTimeout(r, 450)); 
-                    document.getElementById('beep-sound').play().catch(()=>{});
-                    
-                    const card = document.createElement('a');
-                    card.href = node.url;
-                    card.className = 'node-card';
-                    card.innerHTML = `
-                        <span style="letter-spacing:1px;">${node.nombre.toUpperCase()}</span>
-                        <div class="status-dot"></div>
-                    `;
-                    els.nodes.appendChild(card);
+                if(data.status === "online") {
+                    els.status.innerText = `[ NODO_ACTIVO: ${data.key.toUpperCase()} ]`;
+                    const services = [
+                        { n: "Syntax Sanctuary", u: "https://syntaxsanctuary.com" },
+                        { n: "PHP FrameWork", u: "https://phpframe.work" },
+                        { n: "Mercancia Store", u: "https://mercancia.store" }
+                    ];
+                    for(let s of services) {
+                        await new Promise(r => setTimeout(r, 500));
+                        document.getElementById('beep').play().catch(()=>{});
+                        const link = document.createElement('a');
+                        link.href = s.u; link.target = "_blank"; link.className = 'node-link';
+                        link.innerHTML = `<span>${s.n.toUpperCase()}</span><div style="width:10px;height:10px;border-radius:50%;background:var(--online);box-shadow:0 0 5px var(--online);"></div>`;
+                        els.list.appendChild(link);
+                    }
                 }
-                document.getElementById('status-msg').innerText = '[ PROTOCOLO COMPLETADO: RED ACTIVA ]';
-            } catch(e) { reportError("Fallo en scanServices()", e); }
+            } catch(e) { console.error(e); }
         }
 
-        // --- FEED DE HISTORIAS ---
         async function loadFeed() {
             try {
-                const res = await fetch(CONFIG.API_STORIES);
+                const res = await fetch(API_STORIES);
                 const data = await res.json();
-                els.header.innerHTML = '';
-                if(data.length === 0) {
-                    els.header.innerHTML = '<div style="width:100%; text-align:center; font-size:0.7rem; color:var(--text-muted);">[ ESPERANDO TRANSMISIONES... ]</div>';
-                    return;
-                }
-                data.forEach(n => {
-                    const sphere = document.createElement('div');
-                    sphere.className = 'aw-node-sphere';
-                    sphere.innerHTML = `<video src="${n.url}" autoplay muted loop playsinline></video>`;
-                    sphere.onclick = () => {
-                        const v = document.createElement('video');
-                        v.src = n.url; v.autoplay = true; v.controls = true; v.playsinline = true;
-                        v.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:5000;";
-                        v.onclick = () => v.remove();
-                        document.body.appendChild(v);
+                const feed = document.getElementById('stories-feed');
+                const items = Array.isArray(data) ? data : Object.values(data);
+                items.forEach(i => {
+                    const div = document.createElement('div');
+                    div.className = 'node-sphere';
+                    div.innerHTML = `<video src="${i.url}" autoplay muted loop playsinline></video>`;
+                    div.onclick = () => {
+                        const full = document.createElement('video');
+                        full.src = i.url; full.autoplay = true; full.controls = true;
+                        full.style = "position:fixed;inset:0;width:100%;height:100%;background:#000;z-index:20000;";
+                        full.onclick = () => full.remove();
+                        document.body.appendChild(full);
                     };
-                    els.header.appendChild(sphere);
+                    feed.appendChild(div);
                 });
-            } catch(e) { reportError("Fallo en loadFeed()", e); }
+            } catch(e) { console.warn("Feed offline"); }
         }
 
-        // --- SISTEMA DE CÁMARA + PROGRESO ---
         els.camBtn.onclick = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
-                document.getElementById('aw-v-prev').srcObject = stream;
-                document.getElementById('aw-cam-ui').style.display = 'flex';
+                document.getElementById('v-preview').srcObject = stream;
+                document.getElementById('cam-overlay').style.display = 'flex';
                 recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
                 recorder.ondataavailable = e => chunks.push(e.data);
-                recorder.onstop = uploadProcess;
-            } catch(e) { reportError("Acceso a Hardware Denegado", e); }
+                recorder.onstop = upload;
+            } catch(e) { els.error.innerText = "ACCESO_DENEGADO: VERIFICA PERMISOS DE CÁMARA"; }
         };
 
-        els.recBtn.onclick = () => {
+        els.recBtn.onclick = function() {
             if(recorder.state === "inactive") {
-                startRec();
-            } else {
-                stopRec();
-            }
+                chunks = []; recorder.start();
+                this.innerText = "[ DETENER ]";
+                this.style.borderColor = "red";
+                let start = Date.now();
+                timerInterval = setInterval(() => {
+                    let elapsed = Date.now() - start;
+                    let rem = Math.max(0, 60 - Math.floor(elapsed/1000));
+                    document.getElementById('timer').innerText = `00:${rem < 10 ? '0'+rem : rem}`;
+                    if(elapsed >= 60000) stopRecording();
+                }, 100);
+            } else { stopRecording(); }
         };
 
-        function startRec() {
-            chunks = [];
-            recorder.start();
-            els.recBtn.innerText = "[ TRANSMITIENDO ]";
-            els.recBtn.style.borderColor = "red";
-            
-            let start = Date.now();
-            timerInt = setInterval(() => {
-                let elapsed = Date.now() - start;
-                let percent = (elapsed / CONFIG.MAX_TIME) * 100;
-                els.progress.style.width = `${percent}%`;
-                
-                let rem = Math.max(0, 60 - Math.floor(elapsed / 1000));
-                document.getElementById('aw-rec-timer').innerText = `00:${rem < 10 ? '0'+rem : rem}`;
-
-                if(elapsed >= CONFIG.MAX_TIME) stopRec();
-            }, 100);
-        }
-
-        function stopRec() {
-            clearInterval(timerInt);
+        function stopRecording() {
+            clearInterval(timerInterval);
             if(recorder.state !== "inactive") recorder.stop();
             recorder.stream.getTracks().forEach(t => t.stop());
-            els.recBtn.innerText = "[ SUBIENDO ]";
-            els.recBtn.disabled = true;
-            els.progress.style.background = "cyan"; 
+            els.recBtn.style.display = "none";
+            document.getElementById('abort-btn').style.display = "none";
+            els.uploadUI.style.display = "flex"; // Mostramos la barra de progreso al subir
         }
 
-        async function uploadProcess() {
+        async function upload() {
             try {
                 const blob = new Blob(chunks, { type: 'video/webm' });
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
+
+                // Simulamos progreso visual de subida mientras el FileReader procesa
+                let p = 0;
+                const pInt = setInterval(() => {
+                    p += 5;
+                    els.prog.style.width = p + "%";
+                    if(p >= 90) clearInterval(pInt);
+                }, 100);
+
                 reader.onloadend = async () => {
-                    const res = await fetch(CONFIG.API_STORIES, {
-                        method: 'POST',
-                        body: JSON.stringify({ video: reader.result })
-                    });
-                    if(!res.ok) throw new Error(`HTTP_${res.status}`);
-                    location.reload();
+                    const res = await fetch(API_STORIES, { method: 'POST', body: JSON.stringify({ video: reader.result }) });
+                    els.prog.style.width = "100%";
+                    setTimeout(() => location.reload(), 800);
                 };
-            } catch(e) { reportError("Fallo en la subida al Nodo", e); }
+            } catch(e) { els.error.innerText = "ERROR_NODO: FALLO EN LA TRANSMISIÓN"; }
         }
     })();
     </script>
