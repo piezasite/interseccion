@@ -25,307 +25,292 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: 'Share Tech Mono', monospace;
-            margin: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 0; height: 100vh; width: 100vw;
+            display: flex; justify-content: center; align-items: center;
             overflow: hidden;
             background-image: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         }
 
-        /* Scanlines estéticas */
         body::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px;
-            z-index: 100;
-            pointer-events: none;
+            background-size: 100% 4px; z-index: 100; pointer-events: none;
         }
 
-        /* --- HEADER DE HISTORIAS (Glassmorphism Oro) --- */
+        /* --- HEADER HISTORIAS --- */
         #aw-feed-header { 
             position: fixed; top: 0; left: 0; width: 100%; z-index: 999;
-            background: rgba(2, 6, 23, 0.5);
-            backdrop-filter: blur(15px) saturate(150%);
-            -webkit-backdrop-filter: blur(15px) saturate(150%);
+            background: rgba(2, 6, 23, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-glass);
-            padding: 12px 0; display: flex; gap: 15px; overflow-x: auto; 
-            white-space: nowrap; align-items: center; min-height: 95px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            padding: 10px 0; display: none; gap: 15px; overflow-x: auto; align-items: center; min-height: 95px;
         }
-        #aw-feed-header::-webkit-scrollbar { height: 3px; }
-        #aw-feed-header::-webkit-scrollbar-thumb { background: var(--gold); }
 
         .aw-node-sphere { 
-            flex: 0 0 68px; height: 68px; border-radius: 50%; 
-            border: 2px solid var(--gold); overflow: hidden; cursor: pointer; 
-            margin-left: 15px; background: #000; position: relative;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            flex: 0 0 65px; height: 65px; border-radius: 50%; border: 2px solid var(--gold);
+            overflow: hidden; cursor: pointer; margin-left: 15px; background: #000;
         }
-        .aw-node-sphere:hover { transform: scale(1.15); border-color: var(--gold-bright); }
         .aw-node-sphere video { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- TERMINAL CENTRAL --- */
         .grial-terminal {
-            width: 92%;
-            max-width: 480px;
-            background: var(--glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-glass);
-            border-radius: 12px;
-            padding: 40px 30px;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(212, 175, 55, 0.05);
-            text-align: center;
+            width: 92%; max-width: 480px; background: var(--glass);
+            border: 1px solid var(--border-glass); border-radius: 12px;
+            padding: 30px; position: relative; z-index: 10; text-align: center;
+            display: none;
         }
 
-        .header {
-            font-size: 1.6rem;
-            color: var(--gold-bright);
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            margin-bottom: 25px;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-            font-weight: bold;
+        .nodes-container { max-height: 280px; overflow-y: auto; margin-top: 20px; padding-right: 5px; }
+        
+        .node-card {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(100, 116, 139, 0.1); border: 1px solid rgba(212, 175, 55, 0.1);
+            margin: 10px 0; padding: 15px; border-radius: 6px;
+            animation: slideIn 0.3s ease-out; text-decoration: none; color: inherit;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--online); box-shadow: 0 0 8px var(--online); }
+
+        /* --- UI CÁMARA Y PROGRESO --- */
+        #aw-cam-ui { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; z-index: 2000; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+        }
+        
+        .progress-container { width: 80%; height: 6px; background: rgba(255,255,255,0.1); margin: 20px 0; border-radius: 3px; overflow: hidden; border: 1px solid rgba(212,175,55,0.2); }
+        #aw-progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.1s linear; }
+
+        /* --- CAPA LEGAL (WRITING EXPERTO) --- */
+        #aw-legal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--bg-color); z-index: 3000; display: flex; justify-content: center; align-items: center;
+        }
+
+        .legal-box { width: 92%; max-width: 480px; background: var(--glass); border: 1px solid var(--gold); padding: 30px; border-radius: 12px; }
+
+        .legal-content { 
+            height: 250px; overflow-y: auto; font-size: 0.8rem; color: var(--text-main); 
+            line-height: 1.7; background: rgba(0,0,0,0.4); padding: 15px; 
+            border: 1px solid rgba(212, 175, 55, 0.1); margin: 15px 0; scrollbar-width: thin;
         }
 
         .btn-action {
-            width: 100%;
-            background: rgba(212, 175, 55, 0.05);
-            border: 1px solid var(--gold);
-            color: var(--gold-bright);
-            padding: 18px;
-            font-family: inherit;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: 0.3s;
-            margin-top: 10px;
+            width: 100%; background: rgba(212, 175, 55, 0.05); border: 1px solid var(--gold);
+            color: var(--gold-bright); padding: 18px; font-family: inherit; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 2px; cursor: pointer; border-radius: 6px;
         }
+        .btn-action:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--text-muted); color: var(--text-muted); }
 
-        .btn-action:hover {
-            background: var(--gold);
-            color: var(--bg-color);
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+        #aw-cam-btn { 
+            position: fixed; bottom: 25px; right: 25px; z-index: 998; 
+            background: var(--gold); color: #000; border: none; width: 60px; height: 60px; 
+            border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: none;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
         }
-
-        /* --- CAPAS DE INTERFAZ (LEGAL Y CÁMARA) --- */
-        #aw-gate { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-color); z-index: 1000000; 
-            display: flex; justify-content: center; align-items: center;
-            background-image: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
-        }
-        .aw-terminal-card { 
-            width: 90%; max-width: 500px; background: var(--glass); 
-            border: 1px solid var(--gold); border-radius: 12px; padding: 35px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
-        }
-        .aw-text-box { 
-            height: 200px; overflow-y: auto; background: rgba(0,0,0,0.4); 
-            padding: 15px; border: 1px solid rgba(212, 175, 55, 0.1);
-            color: var(--text-main); font-size: 0.85rem; line-height: 1.7; margin: 15px 0;
-            text-align: left; scrollbar-width: thin;
-        }
-
-        #aw-cam-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 1000001; display: none; 
-            flex-direction: column; align-items: center; justify-content: center; 
-        }
-        #aw-rec-trigger { 
-            position: fixed; bottom: 25px; right: 25px; z-index: 998;
-            background: rgba(2, 6, 23, 0.8); border: 1px solid var(--gold); color: var(--gold-bright);
-            padding: 15px 22px; border-radius: 50px; font-family: inherit; cursor: pointer;
-            backdrop-filter: blur(5px); font-weight: bold; letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        .rec-active { animation: pulse-red 1.5s infinite; background: #fff !important; color: red !important; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0px rgba(255,0,0,0.7); } 100% { box-shadow: 0 0 0 15px rgba(255,0,0,0); } }
-        
-        body.aw-locked { overflow: hidden !important; }
     </style>
 </head>
 <body>
 
-<div id="aw-feed-header"></div>
+    <div id="aw-feed-header"></div>
 
-<div class="grial-terminal">
-    <div class="header">SYNTAX_SANCTUARY</div>
-    <div id="boot-sector">
-        <div style="color:var(--online); font-size: 0.8rem; margin-bottom: 20px; letter-spacing: 2px;">[ STATUS: OPERATIVO ]</div>
-        <button class="btn-action" onclick="desplegarImperio()">[ ACCEDER_AL_GRIAL ]</button>
+    <div class="grial-terminal" id="main-ui">
+        <div style="color:var(--gold-bright); letter-spacing: 5px; font-weight: bold; margin-bottom: 25px; font-size: 1.4rem;">SYNTAX_SANCTUARY</div>
+        <div id="status-msg" style="font-size: 0.75rem; color: var(--online); letter-spacing: 2px;">INICIALIZANDO PROTOCOLO...</div>
+        <div class="nodes-container" id="nodes-list"></div>
     </div>
-</div>
 
-<div id="aw-gate">
-    <div class="aw-terminal-card">
-        <div style="color:var(--gold-bright); font-size:1.3rem; letter-spacing:4px; margin-bottom:15px; text-align:center; font-weight:bold;">[ AVISO_LEGAL_NODO ]</div>
-        <div class="aw-text-box">
-            <strong>ENTIDAD DIGITAL INDEPENDIENTE:</strong> Este nexo es un proyecto de software experimental operado de forma autónoma. No posee sede física ni constituye una entidad corporativa registrada (LLC/S.A.) en este plano legal.<br><br>
-            <strong>ORIGEN DEL CONOCIMIENTO:</strong> La arquitectura desplegada es el resultado de la síntesis entre formación técnica avanzada de <strong>Udemy</strong> y la heurística de modelos de <strong>Inteligencia Artificial (IA)</strong>.<br><br>
-            <strong>DESLINDE DE RESPONSABILIDAD:</strong> El software se entrega "COMO ESTÁ". El autor se deslinda de toda responsabilidad legal o civil por fallos de red, interceptación de nexos o usos externos de este código.<br><br>
-            <strong>PROTOCOLO DE RED EFÍMERA:</strong> Al ejecutar la transmisión (Cámara), generas un nexo temporal. El video será público por 15 min y se eliminará permanentemente de los registros. Límite de transmisión: 60 segundos.
+    <div id="aw-legal">
+        <div class="legal-box">
+            <div style="color:var(--gold-bright); letter-spacing: 3px; font-weight: bold; text-align: center;">[ TÉRMINOS Y CONDICIONES DEL NODO ]</div>
+            <div class="legal-content">
+                <strong>1. DECLARACIÓN DE IDENTIDAD:</strong> Syntax Sanctuary es un proyecto digital independiente desarrollado por un arquitecto de software autónomo. No constituye una corporación registrada (LLC/S.A.) y opera como un nexo de herramientas experimentales.<br><br>
+                <strong>2. PROPIEDAD INTELECTUAL:</strong> Todo el código, diseño y lógica aquí desplegados son propiedad exclusiva del autor. El conocimiento técnico sintetizado proviene de formación avanzada en <strong>Udemy</strong> y procesos de optimización mediante <strong>Inteligencia Artificial (IA)</strong>. Queda prohibida la ingeniería inversa sin autorización previa.<br><br>
+                <strong>3. PRIVACIDAD Y DATOS EFÍMEROS:</strong> El sistema de "Historias Globales" captura transmisiones de video voluntarias. Dichos archivos son de carácter <strong>PÚBLICO</strong> durante un ciclo de 15 minutos, tras el cual se ejecutan protocolos de autodestrucción en el servidor. No se almacena información de identificación personal (PII) permanentemente.<br><br>
+                <strong>4. RESPONSABILIDAD DE USO:</strong> El software se entrega "AS-IS" (tal cual). El autor se deslinda de responsabilidades civiles o penales derivadas de usos externos, fallos de conectividad o interceptación de nexos por terceros.<br><br>
+                <strong>5. PROTOCOLO DE TRANSMISIÓN:</strong> Al activar la cámara, el usuario acepta que su imagen sea visible en el Feed Global durante el tiempo establecido. Límite de transmisión: 60 segundos por nexo.
+            </div>
+            <label style="display:block; margin: 15px 0; font-size: 0.85rem; color: var(--gold); cursor: pointer;">
+                <input type="checkbox" id="legal-chk"> RECONOZCO Y ACEPTO EL PROTOCOLO.
+            </label>
+            <button id="legal-btn" class="btn-action" disabled>[ ENTRAR AL SITIO ]</button>
         </div>
-        <label style="color:var(--gold); font-size:0.85rem; cursor:pointer; display:block; text-align:center; margin-bottom:20px;">
-            <input type="checkbox" id="aw-confirm"> RECONOZCO Y ACEPTO LOS TÉRMINOS DEL NODO.
-        </label>
-        <button id="aw-enter" disabled class="btn-action">[ INICIALIZAR_SESION ]</button>
     </div>
-</div>
 
-<button id="aw-rec-trigger" style="display:none;">📷 TRANSMITIR</button>
+    <button id="aw-cam-btn">📷</button>
 
-<div id="aw-cam-overlay">
-    <video id="aw-v-prev" autoplay muted playsinline style="width:85%; max-width:400px; border:2px solid var(--gold); border-radius:12px; transform:scaleX(-1); background:#111;"></video>
-    <div style="margin-top:30px; text-align:center;">
-        <div id="aw-timer" style="color:var(--gold-bright); margin-bottom:15px; font-size:1.4rem; font-weight:bold;">00:60</div>
-        <button id="aw-rec-action" class="btn-action" style="width:160px; border-radius:50px;">[ REC ]</button>
-        <div onclick="location.reload()" style="color:var(--text-muted); cursor:pointer; margin-top:30px; font-size:0.9rem; text-decoration:underline;">[ ABORTAR_NEXO ]</div>
+    <div id="aw-cam-ui">
+        <div style="color:var(--gold-bright); margin-bottom: 15px; letter-spacing: 2px;">TRANSMITIENDO_AL_GRIAL</div>
+        <video id="aw-v-prev" autoplay muted playsinline style="width:85%; max-width:400px; border:2px solid var(--gold); border-radius:10px; transform:scaleX(-1); background:#000;"></video>
+        <div class="progress-container"><div id="aw-progress-bar"></div></div>
+        <div id="aw-rec-timer" style="color:var(--gold-bright); font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">00:60</div>
+        <button id="aw-rec-action" class="btn-action" style="width:180px; border-radius:50px;">[ REC ]</button>
+        <div id="error-log" style="color:red; font-size: 0.75rem; margin-top: 20px; text-align: center; max-width: 80%;"></div>
+        <div onclick="location.reload()" style="margin-top:25px; color:var(--text-muted); cursor:pointer; text-decoration: underline;">[ ABORTAR CONEXIÓN ]</div>
     </div>
-</div>
 
-<script>
-/**
- * SYNTAX SANCTUARY - NEURAL FEED v4.1
- * Paranoid Senior Architect Implementation
- */
-(function() {
-    const CONFIG = {
-        API: 'https://adaptowebs.com/historias.php',
-        KEY: 'aw_legal_v2',
-        MAX_SEC: 60
-    };
+    <audio id="beep-sound" src="https://actions.google.com/sounds/v1/foley/electronic_chime.ogg"></audio>
 
-    const feed = document.getElementById('aw-feed-header');
-    const gate = document.getElementById('aw-gate');
-    const trigger = document.getElementById('aw-rec-trigger');
-    const recAction = document.getElementById('aw-rec-action');
-    const timerText = document.getElementById('aw-timer');
-    
-    let recorder; let chunks = []; let timerInt;
-
-    // --- GESTIÓN DE ACCESO ---
-    if(localStorage.getItem(CONFIG.KEY)) {
-        gate.style.display = 'none';
-        trigger.style.display = 'block';
-        loadFeed();
-    } else {
-        document.body.classList.add('aw-locked');
-    }
-
-    document.getElementById('aw-confirm').onchange = (e) => document.getElementById('aw-enter').disabled = !e.target.checked;
-    
-    document.getElementById('aw-enter').onclick = () => {
-        localStorage.setItem(CONFIG.KEY, 'true');
-        location.reload();
-    };
-
-    // --- MOTOR DE TRANSMISIÓN ---
-    trigger.onclick = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { width: 480, height: 640, facingMode: "user" }, 
-                audio: true 
-            });
-            document.getElementById('aw-v-prev').srcObject = stream;
-            document.getElementById('aw-cam-overlay').style.display = 'flex';
-            
-            recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-            recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
-            recorder.onstop = uploadTransmission;
-        } catch(e) { 
-            alert("ERROR: Protocolo de hardware denegado."); 
-        }
-    };
-
-    recAction.onclick = () => {
-        if(recorder.state === "inactive") {
-            startRecording();
-        } else {
-            stopRecording();
-        }
-    };
-
-    function startRecording() {
-        chunks = []; recorder.start();
-        let timeLeft = CONFIG.MAX_SEC;
-        recAction.innerText = "[ STOP ]";
-        recAction.classList.add('rec-active');
-        
-        timerInt = setInterval(() => {
-            timeLeft--;
-            timerText.innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
-            if(timeLeft <= 0) stopRecording();
-        }, 1000);
-    }
-
-    function stopRecording() {
-        clearInterval(timerInt);
-        if(recorder.state !== "inactive") recorder.stop();
-        // Cierre preventivo de hardware para evitar memory leaks
-        recorder.stream.getTracks().forEach(track => track.stop());
-        recAction.innerText = "[ SUBIENDO ]";
-        recAction.disabled = true;
-    }
-
-    async function uploadTransmission() {
-        if(chunks.length === 0) return location.reload();
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = async () => {
-            try {
-                await fetch(CONFIG.API, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ video: reader.result }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch(e) { console.error("Error en el nexo."); }
-            location.reload();
+    <script>
+    (function() {
+        const CONFIG = {
+            API_STORIES: 'https://adaptowebs.com/historias.php',
+            API_STATUS: 'https://adaptowebs.com/status.php',
+            LEGAL_KEY: 'aw_legal_v2',
+            MAX_TIME: 60000
         };
-    }
 
-    async function loadFeed() {
-        try {
-            const res = await fetch(CONFIG.API);
-            const nodes = await res.json();
-            if(!nodes || nodes.length === 0) {
-                feed.innerHTML = '<div style="width:100%; text-align:center; font-size:0.7rem; color:var(--text-muted); opacity:0.6;">[ ESPERANDO FRECUENCIAS... ]</div>';
-                return;
+        const els = {
+            legal: document.getElementById('aw-legal'),
+            main: document.getElementById('main-ui'),
+            nodes: document.getElementById('nodes-list'),
+            header: document.getElementById('aw-feed-header'),
+            camBtn: document.getElementById('aw-cam-btn'),
+            progress: document.getElementById('aw-progress-bar'),
+            recBtn: document.getElementById('aw-rec-action'),
+            error: document.getElementById('error-log')
+        };
+
+        let recorder, chunks = [], timerInt;
+
+        function reportError(msg, e) {
+            console.error(msg, e);
+            els.error.innerText = `ERROR_CRÍTICO: ${msg} | ${e.message || 'Check Server Console'}`;
+        }
+
+        // --- FLUJO INICIAL ---
+        document.getElementById('legal-chk').onchange = (e) => document.getElementById('legal-btn').disabled = !e.target.checked;
+        
+        document.getElementById('legal-btn').onclick = () => {
+            localStorage.setItem(CONFIG.LEGAL_KEY, 'true');
+            initProject();
+        };
+
+        if(localStorage.getItem(CONFIG.LEGAL_KEY)) initProject();
+
+        function initProject() {
+            els.legal.style.display = 'none';
+            els.main.style.display = 'block';
+            els.header.style.display = 'flex';
+            els.camBtn.style.display = 'block';
+            scanServices();
+            loadFeed();
+        }
+
+        // --- CARGA DE SERVICIOS (AUTO-STATUS + BEEP) ---
+        async function scanServices() {
+            try {
+                const res = await fetch(CONFIG.API_STATUS);
+                const data = await res.json();
+                els.nodes.innerHTML = '';
+                
+                for(let node of data) {
+                    await new Promise(r => setTimeout(r, 450)); 
+                    document.getElementById('beep-sound').play().catch(()=>{});
+                    
+                    const card = document.createElement('a');
+                    card.href = node.url;
+                    card.className = 'node-card';
+                    card.innerHTML = `
+                        <span style="letter-spacing:1px;">${node.nombre.toUpperCase()}</span>
+                        <div class="status-dot"></div>
+                    `;
+                    els.nodes.appendChild(card);
+                }
+                document.getElementById('status-msg').innerText = '[ PROTOCOLO COMPLETADO: RED ACTIVA ]';
+            } catch(e) { reportError("Fallo en scanServices()", e); }
+        }
+
+        // --- FEED DE HISTORIAS ---
+        async function loadFeed() {
+            try {
+                const res = await fetch(CONFIG.API_STORIES);
+                const data = await res.json();
+                els.header.innerHTML = '';
+                if(data.length === 0) {
+                    els.header.innerHTML = '<div style="width:100%; text-align:center; font-size:0.7rem; color:var(--text-muted);">[ ESPERANDO TRANSMISIONES... ]</div>';
+                    return;
+                }
+                data.forEach(n => {
+                    const sphere = document.createElement('div');
+                    sphere.className = 'aw-node-sphere';
+                    sphere.innerHTML = `<video src="${n.url}" autoplay muted loop playsinline></video>`;
+                    sphere.onclick = () => {
+                        const v = document.createElement('video');
+                        v.src = n.url; v.autoplay = true; v.controls = true; v.playsinline = true;
+                        v.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:5000;";
+                        v.onclick = () => v.remove();
+                        document.body.appendChild(v);
+                    };
+                    els.header.appendChild(sphere);
+                });
+            } catch(e) { reportError("Fallo en loadFeed()", e); }
+        }
+
+        // --- SISTEMA DE CÁMARA + PROGRESO ---
+        els.camBtn.onclick = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                document.getElementById('aw-v-prev').srcObject = stream;
+                document.getElementById('aw-cam-ui').style.display = 'flex';
+                recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.onstop = uploadProcess;
+            } catch(e) { reportError("Acceso a Hardware Denegado", e); }
+        };
+
+        els.recBtn.onclick = () => {
+            if(recorder.state === "inactive") {
+                startRec();
+            } else {
+                stopRec();
             }
-            nodes.forEach(n => {
-                const sphere = document.createElement('div');
-                sphere.className = 'aw-node-sphere';
-                sphere.innerHTML = `<video src="${n.url}" autoplay muted loop playsinline></video>`;
-                sphere.onclick = () => {
-                    const full = document.createElement('div');
-                    full.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:2000000; display:flex; align-items:center; justify-content:center;";
-                    full.innerHTML = `<video src="${n.url}" autoplay controls playsinline style="max-height:85%; border:1px solid var(--gold); box-shadow:0 0 30px var(--gold-dark);"></video>`;
-                    full.onclick = () => full.remove();
-                    document.body.appendChild(full);
-                };
-                feed.appendChild(sphere);
-            });
-        } catch(e) {}
-    }
-    
-    // Función dummy para el botón del Grial
-    window.desplegarImperio = () => {
-        alert("Sincronizando con el Grial de Red...");
-        // Aquí puedes añadir tu lógica original de nodos si la tienes
-    };
-})();
-</script>
+        };
 
+        function startRec() {
+            chunks = [];
+            recorder.start();
+            els.recBtn.innerText = "[ TRANSMITIENDO ]";
+            els.recBtn.style.borderColor = "red";
+            
+            let start = Date.now();
+            timerInt = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let percent = (elapsed / CONFIG.MAX_TIME) * 100;
+                els.progress.style.width = `${percent}%`;
+                
+                let rem = Math.max(0, 60 - Math.floor(elapsed / 1000));
+                document.getElementById('aw-rec-timer').innerText = `00:${rem < 10 ? '0'+rem : rem}`;
+
+                if(elapsed >= CONFIG.MAX_TIME) stopRec();
+            }, 100);
+        }
+
+        function stopRec() {
+            clearInterval(timerInt);
+            if(recorder.state !== "inactive") recorder.stop();
+            recorder.stream.getTracks().forEach(t => t.stop());
+            els.recBtn.innerText = "[ SUBIENDO ]";
+            els.recBtn.disabled = true;
+            els.progress.style.background = "cyan"; 
+        }
+
+        async function uploadProcess() {
+            try {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = async () => {
+                    const res = await fetch(CONFIG.API_STORIES, {
+                        method: 'POST',
+                        body: JSON.stringify({ video: reader.result })
+                    });
+                    if(!res.ok) throw new Error(`HTTP_${res.status}`);
+                    location.reload();
+                };
+            } catch(e) { reportError("Fallo en la subida al Nodo", e); }
+        }
+    })();
+    </script>
 </body>
 </html>
