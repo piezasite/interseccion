@@ -269,67 +269,222 @@
         openCamBtn.style.display = 'block';
         loadStories();
     };
+<script>
+/**
+ * Adaptowebs Global Stories v3.1
+ * Glassmorphism Header | Límite: 1 Minuto (60s)
+ */
+(function() {
+    // CONFIGURACIÓN
+    const API_URL = 'https://adaptowebs.com/historias.php'; // Reemplaza con tu dominio
+    const LEGAL_KEY = 'aw_legal_v2';
+    const STORY_MAX_DURATION = 60000; // 60 Segundos (1 Minuto)
 
-    // DETONADOR DE CÁMARA
-    openCamBtn.onclick = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('aw-video-prev').srcObject = stream;
-        camUI.style.display = 'flex';
-        recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = upload;
+    // ESTILOS DINÁMICOS
+    const style = document.createElement('style');
+    style.innerHTML = `
+        body.aw-locked { overflow: hidden !important; }
+        
+        /* Header Superior Glassmorphism */
+        #aw-header-stories { 
+            position: sticky; top: 0; left: 0; width: 100%; z-index: 9999;
+            background: rgba(255, 255, 255, 0.4); /* Fondo blanco transparente */
+            backdrop-filter: blur(10px); /* Efecto de desenfoque de fondo */
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Borde sutil */
+            padding: 12px 0;
+            display: flex; gap: 15px; overflow-x: auto; white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            min-height: 85px; align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            scrollbar-width: thin; /* Barra de scroll fina */
+        }
+        #aw-header-stories::-webkit-scrollbar { height: 4px; }
+        #aw-header-stories::-webkit-scrollbar-thumb { background: #d32f2f; border-radius: 4px; }
+        
+        .aw-sphere { 
+            flex: 0 0 70px; height: 70px; border-radius: 50%; 
+            border: 2px solid #d32f2f; overflow: hidden; cursor: pointer; 
+            margin-left: 10px; background: #000; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .aw-sphere:hover { transform: scale(1.1); box-shadow: 0 4px 15px rgba(211,47,47,0.4); }
+        .aw-sphere video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Capas de Interfaz (Legal y Cámara) */
+        #aw-legal-gate { position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:100000; display:flex; justify-content:center; align-items:center; }
+        #aw-cam-ui { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:100001; display:none; flex-direction:column; align-items:center; justify-content:center; }
+        #aw-open-cam { position: fixed; bottom: 20px; right: 20px; z-index: 9998; background: #d32f2f; color: #fff; border: none; border-radius: 50px; padding: 15px 20px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background 0.3s; }
+        #aw-open-cam:hover { background: #b71c1c; }
+        
+        /* Botón REC y Contador */
+        #aw-rec-container { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        #aw-main-rec { width:80px; height:80px; border-radius:50%; border:none; background:red; color:white; font-weight:bold; cursor:pointer; font-size:1rem; transition: background 0.3s; }
+        #aw-rec-timer { color: white; font-size: 0.9rem; font-weight: bold; }
+    `;
+    document.head.appendChild(style);
+
+    // ESTRUCTURA HTML
+    document.body.insertAdjacentHTML('afterbegin', `<div id="aw-header-stories"></div>`); // Inyectar al inicio
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="aw-legal-gate">
+            <div style="max-width:480px; padding:30px; border:3px solid #d32f2f; border-radius:20px; font-family:sans-serif; text-align:left;">
+                <h2 style="color:#d32f2f; margin-top:0;">ADAPTOWEBS - AVISO DE AUTOR</h2>
+                <div style="height:160px; overflow-y:auto; font-size:0.85rem; line-height:1.6; background:#f8f8f8; padding:15px; margin-bottom:20px; border-radius:8px;">
+                    <strong>ENTIDAD INDEPENDIENTE:</strong> Proyecto 100% digital sin sede física. El conocimiento proviene de formación en <strong>Udemy</strong> y optimización avanzada mediante <strong>Inteligencia Artificial (IA)</strong>.<br><br>
+                    <strong>DISCLAIMER (Fase Beta):</strong> El software se entrega "as-is". El autor se deslinda de responsabilidad por usos externos. No hay LLC ni marca registrada de momento.<br><br>
+                    <strong>HISTORIAS GLOBALES:</strong> Al grabar, tu video es público por 15 min y tiene una duración máxima de 1 min. No se almacena información personal.
+                </div>
+                <label style="font-weight:bold; cursor:pointer;"><input type="checkbox" id="aw-chk"> He leído y acepto los términos.</label><br>
+                <button id="aw-accept-btn" disabled style="width:100%; margin-top:15px; padding:15px; background:#d32f2f; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">ENTRAR AL SITIO</button>
+            </div>
+        </div>
+        
+        <button id="aw-open-cam" style="display:none;">📷 GRABAR HISTORIA</button>
+        
+        <div id="aw-cam-ui">
+            <video id="aw-video-prev" autoplay muted style="width:90%; max-width:400px; border-radius:15px; transform:scaleX(-1); border: 2px solid #fff;"></video>
+            <div id="aw-rec-container">
+                <button id="aw-main-rec">REC</button>
+                <span id="aw-rec-timer">00:00</span>
+            </div>
+            <button onclick="location.reload()" style="margin-top:20px; color:#fff; background:none; border:none; cursor:pointer; font-size:0.9rem;">Cerrar Cámara</button>
+        </div>
+    `);
+
+    // LÓGICA DE CONTROL
+    const header = document.getElementById('aw-header-stories');
+    const gate = document.getElementById('aw-legal-gate');
+    const openCam = document.getElementById('aw-open-cam');
+    const recBtn = document.getElementById('aw-main-rec');
+    const recTimer = document.getElementById('aw-rec-timer');
+    
+    let recorder; let chunks = []; let recInterval; let startTime;
+
+    // FLUJO LEGAL
+    if(localStorage.getItem(LEGAL_KEY)) {
+        gate.style.display = 'none';
+        openCam.style.display = 'block';
+        loadStories();
+    } else {
+        document.body.classList.add('aw-locked');
+    }
+
+    document.getElementById('aw-chk').onchange = (e) => document.getElementById('aw-accept-btn').disabled = !e.target.checked;
+    document.getElementById('aw-accept-btn').onclick = () => {
+        localStorage.setItem(LEGAL_KEY, 'true');
+        location.reload();
     };
 
-    cancelCam.onclick = () => {
-        const stream = document.getElementById('aw-video-prev').srcObject;
-        stream.getTracks().forEach(t => t.stop());
-        camUI.style.display = 'none';
-    };
-
-    // GRABACIÓN
-    recBtn.onclick = () => {
-        if(recorder.state === "inactive") {
-            chunks = [];
-            recorder.start();
-            recBtn.innerText = "STOP";
-            recBtn.style.background = "#fff"; recBtn.style.color = "red";
-        } else {
-            recorder.stop();
-            recBtn.innerText = "SUBIENDO...";
-            recBtn.disabled = true;
+    // LÓGICA DE CÁMARA
+    openCam.onclick = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 640 }, audio: true });
+            document.getElementById('aw-video-prev').srcObject = stream;
+            document.getElementById('aw-cam-ui').style.display = 'flex';
+            
+            recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+            recorder.onstop = uploadVideo;
+        } catch (e) {
+            console.error("Error accediendo a la cámara:", e);
+            alert("Requiere permisos de cámara y micrófono.");
         }
     };
 
-    async function upload() {
+    // GRABACIÓN CON LÍMITE DE 1 MINUTO
+    recBtn.onclick = () => {
+        if(recorder.state === "inactive") {
+            chunks = []; recorder.start();
+            startTime = Date.now();
+            
+            // UI de Grabación
+            recBtn.innerText = "STOP"; recBtn.style.background = "#fff"; recBtn.style.color = "red";
+            recTimer.textContent = "00:00";
+            
+            // Iniciar Contador y Tiempo de Autodestrucción
+            recInterval = setInterval(updateTimer, 1000);
+            
+            // Auto-STOP a los 60 segundos
+            setTimeout(() => {
+                if(recorder.state === "recording") {
+                    stopRecording();
+                    console.log("Grabación detenida por tiempo máximo (1 min).");
+                }
+            }, STORY_MAX_DURATION);
+            
+        } else {
+            stopRecording();
+        }
+    };
+
+    function updateTimer() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const seconds = String(elapsed % 60).padStart(2, '0');
+        recTimer.textContent = `${minutes}:${seconds}`;
+    }
+
+    function stopRecording() {
+        if(recorder.state === "recording") {
+            recorder.stop();
+            // Detener contador
+            clearInterval(recInterval);
+            
+            // UI de Subida
+            recBtn.innerText = "SUBIENDO"; recBtn.disabled = true; recBtn.style.background = "#ccc";
+            recTimer.textContent = "PROCESANDO VIDEO...";
+            
+            // Detener tracks de la cámara
+            recorder.stream.getTracks().forEach(t => t.stop());
+        }
+    }
+
+    async function uploadVideo() {
         const blob = new Blob(chunks, { type: 'video/webm' });
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ video: reader.result }) });
-            location.reload();
+            const base64 = reader.result;
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ video: base64 }) });
+                console.log("Historia subida con éxito.");
+                location.reload(); // Recargar para ver el feed actualizado
+            } catch (e) {
+                console.error("Error en la subida:", e);
+                recBtn.innerText = "ERROR";
+                recTimer.textContent = "Intenta de nuevo.";
+            }
         };
     }
 
-    // CARGAR HISTORIAS EN EL DIV SEPARADO
+    // CARGAR HISTORIAS EN EL HEADER (CORS GET)
     async function loadStories() {
-        const container = document.getElementById('aw-stories-container');
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
+            
+            if(data.length === 0) {
+                header.innerHTML = '<p style="width:100%;text-align:center;color:#666;font-size:0.9rem;">Sin historias activas de momento.</p>';
+                return;
+            }
+
             data.forEach(s => {
                 const sphere = document.createElement('div');
                 sphere.className = 'aw-sphere';
                 sphere.innerHTML = `<video src="${s.url}" autoplay muted loop></video>`;
+                
+                // Reproductor Pantalla Completa
                 sphere.onclick = () => {
                     const v = document.createElement('video');
                     v.src = s.url; v.autoplay = true; v.controls = true;
-                    v.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:2000000;";
-                    v.onclick = () => v.remove();
+                    v.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:2000000; cursor:pointer;";
+                    v.onclick = () => v.remove(); // Cerrar al tocar
                     document.body.appendChild(v);
                 };
-                container.appendChild(sphere);
+                header.appendChild(sphere);
             });
-        } catch(e) {}
+        } catch(e) { console.log("Error cargando feed global."); }
     }
 })();
 </script>
