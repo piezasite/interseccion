@@ -339,6 +339,85 @@
     });
 })();
 </script>
+<script>
+(function() {
+    const API_URL = 'https://adaptowebs.com/historias.php';
+    
+    // Inyectar Botón de Cámara y Visor
+    document.body.insertAdjacentHTML('beforeend', `
+        <button id="aw-cam-btn" style="position:fixed; bottom:20px; left:20px; z-index:9999; background:#d32f2f; border:none; border-radius:50%; width:60px; height:60px; color:white; font-size:24px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3);">📷</button>
+        <div id="aw-cam-ui" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:100000; display:none; flex-direction:column; align-items:center; justify-content:center;">
+            <video id="aw-prev" autoplay muted style="width:90%; max-width:400px; border-radius:15px; transform:scaleX(-1);"></video>
+            <div style="margin-top:20px;">
+                <button id="aw-rec-start" style="padding:15px 30px; border-radius:30px; border:none; background:#d32f2f; color:white; font-weight:bold;">GRABAR 10s</button>
+                <button onclick="location.reload()" style="background:none; border:1px solid #fff; color:#fff; padding:10px; margin-left:10px;">Cerrar</button>
+            </div>
+        </div>
+    `);
+
+    // --- LÓGICA DE CAPTURA ---
+    let recorder;
+    let chunks = [];
+
+    document.getElementById('aw-cam-btn').onclick = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('aw-prev').srcObject = stream;
+        document.getElementById('aw-cam-ui').style.display = 'flex';
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = async () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ video: reader.result })
+                });
+                location.reload(); // Refrescar para ver la nueva esfera
+            };
+        };
+    };
+
+    document.getElementById('aw-rec-start').onclick = function() {
+        this.innerText = "GRABANDO...";
+        this.disabled = true;
+        recorder.start();
+        setTimeout(() => recorder.stop(), 10000); // Grabación de 10 segundos
+    };
+
+    // --- LÓGICA DE VISUALIZACIÓN GLOBAL ---
+    async function loadGlobalStories() {
+        try {
+            const res = await fetch(API_URL);
+            const stories = await res.json();
+            
+            stories.forEach(s => {
+                const sphere = document.createElement('div');
+                sphere.style = `position:fixed; width:65px; height:65px; border-radius:50%; border:3px solid #d32f2f; background:#000; overflow:hidden; z-index:998; cursor:pointer; left:${Math.random()*80}vw; top:${20 + Math.random()*60}vh; box-shadow:0 0 15px rgba(211,47,47,0.5);`;
+                
+                const vid = document.createElement('video');
+                vid.src = s.url; vid.muted = true; vid.autoplay = true; vid.loop = true;
+                vid.style = "width:100%; height:100%; object-fit:cover;";
+                
+                sphere.onclick = () => {
+                    const full = document.createElement('div');
+                    full.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000001; display:flex; align-items:center; justify-content:center;";
+                    full.innerHTML = `<video src="${s.url}" autoplay controls style="max-width:90%; border-radius:15px;"></video>`;
+                    full.onclick = () => full.remove();
+                    document.body.appendChild(full);
+                };
+
+                sphere.appendChild(vid);
+                document.body.appendChild(sphere);
+            });
+        } catch (e) { console.log("Error cargando feed global."); }
+    }
+
+    // Solo cargar si aceptó términos
+    if (localStorage.getItem('aw_consent_verified')) loadGlobalStories();
+})();
+</script>
 
 </body>
 </html>
