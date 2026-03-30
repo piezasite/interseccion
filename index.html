@@ -73,10 +73,15 @@
     <script>
     (function() {
         const DOMINIOS = ["adaptowebs.com", "syntaxsanctuary.com", "piezas4websites.com", "phpframe.work", "timefinancehub.com", "mercancia.store"];
-        let audioCtx;
+        const API_STORIES = 'https://adaptowebs.com/historias.php';
+        
+        // Variables globales necesarias
+        let recorder, chunks = [], timerInterval, audioCtx;
 
+        // --- SISTEMA DE AUDIO SINTÉTICO (SIN DEPENDENCIAS) ---
         function playBeep() {
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.frequency.setValueAtTime(900, audioCtx.currentTime);
@@ -85,15 +90,19 @@
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
+        // --- INICIALIZACIÓN ---
+        document.getElementById('check-legal').onchange = (e) => document.getElementById('accept-legal').disabled = !e.target.checked;
+        
         document.getElementById('accept-legal').onclick = () => {
-            localStorage.setItem('grial_auth', '1');
+            localStorage.setItem('syntax_auth', '1');
             document.getElementById('aw-legal-overlay').style.display = 'none';
             document.getElementById('main-nexus').style.display = 'flex';
             document.getElementById('cam-trigger').style.display = 'block';
-            if(audioCtx) audioCtx.resume();
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            loadFeed();
         };
-        
-        document.getElementById('check-legal').onchange = (e) => document.getElementById('accept-legal').disabled = !e.target.checked;
+
+        // --- ESCANEO DE NODOS ---
         document.getElementById('btn-scan').onclick = async () => {
             const list = document.getElementById('nodes-list'); list.innerHTML = '';
             for(let d of DOMINIOS) {
@@ -105,13 +114,82 @@
                         link.href = `https://${d}`; link.target = "_blank";
                         link.innerHTML = `<span>${d.toUpperCase()}</span><span style="color:var(--online)">ONLINE</span>`;
                     } else throw 0;
-                } catch(e) { link.innerHTML = `<span>${d.toUpperCase()}</span><span style="color:#ef4444">OFFLINE</span>`; }
+                } catch(e) { 
+                    link.innerHTML = `<span>${d.toUpperCase()}</span><span style="color:#ef4444">OFFLINE</span>`; 
+                }
                 list.appendChild(link);
             }
         };
 
-        // Lógica de historias y cámara igual que definimos...
-        // (La lógica de loadFeed, Recorder y Upload permanece igual al bloque anterior)
+        // --- CÁMARA (CORREGIDO: ACCESO DIRECTO) ---
+        document.getElementById('cam-trigger').onclick = async () => {
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+                document.getElementById('v-preview').srcObject = s;
+                document.getElementById('cam-overlay').style.display = 'flex';
+                
+                recorder = new MediaRecorder(s, {mimeType: 'video/webm'});
+                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.onstop = upload;
+            } catch(e) { 
+                alert("Error de cámara: " + e.message); 
+            }
+        };
+
+        // --- GRABACIÓN (20 SEGUNDOS) ---
+        document.getElementById('rec-btn').onclick = function() {
+            if(!recorder || recorder.state === 'inactive') {
+                chunks = []; recorder.start();
+                this.innerText = "[ DETENER ]";
+                let start = Date.now();
+                timerInterval = setInterval(() => {
+                    let rem = 20 - Math.floor((Date.now()-start)/1000);
+                    document.getElementById('timer').innerText = `00:${rem<10?'0'+rem:rem}`;
+                    if(rem <= 0) stopRec();
+                }, 100);
+            } else { stopRec(); }
+        };
+
+        function stopRec() {
+            clearInterval(timerInterval);
+            if(recorder && recorder.state !== 'inactive') recorder.stop();
+            recorder.stream.getTracks().forEach(t => t.stop());
+            document.getElementById('rec-btn').style.display = 'none';
+            document.getElementById('upload-container').style.display = 'flex';
+        }
+
+        // --- SUBIDA (MBs REALES) ---
+        function upload() {
+            const reader = new FileReader(); 
+            reader.readAsDataURL(new Blob(chunks));
+            reader.onloadend = () => {
+                const payload = JSON.stringify({video: reader.result});
+                const xhr = new XMLHttpRequest(); 
+                xhr.open('POST', API_STORIES);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.upload.onprogress = e => {
+                    if(e.lengthComputable){
+                        const per = (e.loaded/e.total)*100;
+                        document.getElementById('progress-bar').style.width = per+'%';
+                        document.getElementById('upload-stats').innerText = `${(e.loaded/1048576).toFixed(2)}MB / ${(e.total/1048576).toFixed(2)}MB`;
+                    }
+                };
+                xhr.onload = () => location.reload();
+                xhr.send(payload);
+            };
+        }
+
+        async function loadFeed() {
+            try {
+                const r = await fetch(API_STORIES); const data = await r.json();
+                data.forEach(i => {
+                    const div = document.createElement('div'); div.className='node-sphere';
+                    div.innerHTML = `<video src="${i.url}" autoplay muted loop playsinline></video>`;
+                    div.onclick = () => { const v=document.createElement('video'); v.src=i.url; v.autoplay=true; v.controls=true; v.style="position:fixed;inset:0;width:100%;height:100%;background:#000;z-index:20000;"; v.onclick=()=>v.remove(); document.body.appendChild(v); };
+                    document.getElementById('stories-feed').appendChild(div);
+                });
+            } catch(e){}
+        }
     })();
     </script>
 </body>
